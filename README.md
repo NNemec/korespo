@@ -1,2 +1,2 @@
-# ng2-electron
-Using Angular2 with Electron
+# korespo
+First experiments towards an eMail client

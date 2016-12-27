@@ -1,7 +1,7 @@
 {
-  "name": "ng2-electron",
+  "name": "korespo",
   "version": "0.1.0",
-  "description": "Using Angular 2 with Electron",
+  "description": "Experimental eMail client",
   "main": "main.js",
   "scripts": {
     "start": "tsc && concurrently \"npm run tsc:w\" \"electron .\" ",
@@ -10,21 +10,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DenisVuyka/ng2-electron.git"
+    "url": "git+https://github.com/NNemec/korespo.git"
   },
   "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "Angular"
   ],
-  "author": "Denys Vuika <denys.vuika@gmail.com>",
+  "author": "Norbert Nemec <Norbert@Nemec-online.de>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/DenisVuyka/ng2-electron/issues"
+    "url": "https://github.com/NNemec/korespo/issues"
   },
-  "homepage": "https://github.com/DenisVuyka/ng2-electron/#readme",
+  "homepage": "https://github.com/NNemec/korespo/#readme",
   "dependencies": {
     "@angular/common": "~2.2.0",
     "@angular/compiler": "~2.2.0",
