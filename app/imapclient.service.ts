@@ -16,6 +16,7 @@ export class AccountData {
 @Injectable()
 export class ImapClientService {
   accountData: AccountData;
+  imapClient: any;
 
   constructor() {
     this.accountData = new AccountData;
@@ -24,8 +25,12 @@ export class ImapClientService {
     });
   }
 
+  isLoggedIn(): boolean {
+    return this.imapClient;
+  }
+
   login(): void {
-    var imapClient = new ImapClient(
+    this.imapClient = new ImapClient(
       this.accountData.host,
       this.accountData.port,
       {
@@ -36,11 +41,17 @@ export class ImapClientService {
         requireTLS: true,
       });
 
-    imapClient.connect().then(()=>{
+    this.imapClient.connect().then(()=>{
       console.log("logged in");
       ElectronStorage.set('AccountData', this.accountData);
     }).catch(()=>{
-      console.log("login failed");        
+      console.log("login failed");
+      this.imapClient = undefined;
     })
+  }
+
+  logout(): void {
+    this.imapClient.close();
+    this.imapClient = undefined;    
   }
 }
