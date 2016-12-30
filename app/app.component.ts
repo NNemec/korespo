@@ -9,6 +9,7 @@ import { ImapClientService } from './imapclient.service';
   <div> <label>port: </label> <input [(ngModel)]="imapClientService.accountData.port" placeholder="port"> </div>
   <div> <label>user: </label> <input [(ngModel)]="imapClientService.accountData.user" placeholder="user"> </div>
   <div> <label>pass: </label> <input [(ngModel)]="imapClientService.accountData.pass" placeholder="pass"> </div>
+  <button (click)="imapClientService.login()">login</button>
   `
 })
 export class AppComponent {
