@@ -7,16 +7,17 @@ declare const ImapClient: any
 declare const ElectronStorage: any
 
 export class AccountData {
-  host: String = "";
-  port: Number = 0;
-  user: String = "";
-  pass: String = "";
+  host: string = "";
+  port: number = 0;
+  user: string = "";
+  pass: string = "";
 }
 
 @Injectable()
 export class ImapClientService {
   accountData: AccountData;
   imapClient: any;
+  folders: any;
 
   constructor() {
     this.accountData = new AccountData;
@@ -44,14 +45,26 @@ export class ImapClientService {
     this.imapClient.connect().then(()=>{
       console.log("logged in");
       ElectronStorage.set('AccountData', this.accountData);
+      this.init();
     }).catch(()=>{
       console.log("login failed");
-      this.imapClient = undefined;
+      this.deinit();
     })
   }
 
   logout(): void {
     this.imapClient.close();
+    this.deinit();
+  }
+
+  init(): void {
+    this.imapClient.listMailboxes().then((mailboxes)=>{
+      this.folders = mailboxes.children;
+    });
+  }
+
+  deinit(): void {
+    this.folders = undefined;
     this.imapClient = undefined;    
   }
 }

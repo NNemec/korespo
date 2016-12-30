@@ -8,4 +8,5 @@
 </div>
 <div *ngIf="imapClientService.isLoggedIn()">
   <button (click)="imapClientService.logout()">logout</button>
+  <tree-view [folders]="imapClientService.folders"></tree-view>
 </div>
