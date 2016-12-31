@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 // -- no idea why this does not work, I had to use ../requirements.js instead
 // import { ImapClient } from 'emailjs-imap-client';
 // import { ElectronStorage } from 'electron-storage';
-declare const ImapClient: any
-declare const ElectronStorage: any
+declare const ImapClient: any;
+declare const ElectronStorage: any;
 
 export class AccountData {
   host: string = "";
@@ -66,5 +66,12 @@ export class ImapClientService {
   deinit(): void {
     this.folders = undefined;
     this.imapClient = undefined;    
+    this.cache = undefined;
+  }
+
+  select(path: string): void {
+    this.imapClient.selectMailbox(path,{readOnly:true}).then((mailbox)=>{
+      console.log("path: " + JSON.stringify(mailbox));
+    });
   }
 }

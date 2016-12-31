@@ -1,0 +1,8 @@
+span.folder {
+  cursor: pointer;
+}
+
+span.folder:hover {
+  color: #555555;
+  text-decoration: underline;
+}
