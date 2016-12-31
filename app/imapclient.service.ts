@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 // import { ElectronStorage } from 'electron-storage';
 declare const ImapClient: any;
 declare const ElectronStorage: any;
+declare const NodePouchDB: any;
 
 export class AccountData {
   host: string = "";
@@ -18,6 +19,8 @@ export class ImapClientService {
   accountData: AccountData;
   imapClient: any;
   folders: any;
+  cache: any;
+  selectedPath: string;
 
   constructor() {
     this.accountData = new AccountData;
@@ -58,6 +61,14 @@ export class ImapClientService {
   }
 
   init(): void {
+    this.cache = new NodePouchDB("../imapcache:"+this.accountData.user+"@"+this.accountData.host+":"+this.accountData.port);
+    this.cache.info().then((info)=>{
+      console.log("created PouchDB: " + JSON.stringify(info));
+    }).catch((err)=>{
+      console.log("failed to create PouchDB: " + JSON.stringify(err));      
+    });
+
+    this.selectedPath = undefined;
     this.imapClient.listMailboxes().then((mailboxes)=>{
       this.folders = mailboxes.children;
     });
@@ -67,11 +78,23 @@ export class ImapClientService {
     this.folders = undefined;
     this.imapClient = undefined;    
     this.cache = undefined;
+    this.selectedPath = undefined;
   }
 
   select(path: string): void {
+    this.selectedPath = path;
     this.imapClient.selectMailbox(path,{readOnly:true}).then((mailbox)=>{
-      console.log("path: " + JSON.stringify(mailbox));
+      console.log("received data: " + JSON.stringify(mailbox));
+      mailbox._id = "mailbox:"+path;
+      this.cache.get(mailbox._id).then((doc)=>{
+        console.log("found previous data: " + JSON.stringify(doc));
+        mailbox._rev = doc._rev;
+      }).catch((err)=>{
+        console.log("no previous data found.");
+      }).then((doc)=>{
+        console.log("storing new data: " + JSON.stringify(mailbox));
+        this.cache.put(mailbox);
+      });
     });
   }
 }
