@@ -46,12 +46,14 @@ export class ImapClientService {
         requireTLS: true,
       });
 
+    this.imapClient.logLevel = ImapClient.LOG_LEVEL_INFO;
+
     this.imapClient.connect().then(()=>{
-      console.log("logged in");
+      console.info("logged in");
       ElectronStorage.set('AccountData', this.accountData);
       this.init();
     }).catch(()=>{
-      console.log("login failed");
+      console.error("login failed");
       this.deinit();
     })
   }
@@ -64,9 +66,9 @@ export class ImapClientService {
   init(): void {
     this.cache = new NodePouchDB(ElectronRemote.app.getPath('userData') + "/imapcache:"+this.accountData.user+"@"+this.accountData.host+":"+this.accountData.port);
     this.cache.info().then((info)=>{
-      console.log("created PouchDB: " + JSON.stringify(info));
+      console.info("created PouchDB: " + JSON.stringify(info));
     }).catch((err)=>{
-      console.log("failed to create PouchDB: " + JSON.stringify(err));      
+      console.error("failed to create PouchDB: " + JSON.stringify(err));      
     });
 
     this.selectedPath = undefined;
@@ -85,15 +87,15 @@ export class ImapClientService {
   select(path: string): void {
     this.selectedPath = path;
     this.imapClient.selectMailbox(path,{readOnly:true}).then((mailbox)=>{
-      console.log("received data: " + JSON.stringify(mailbox));
+      console.info("received data: " + JSON.stringify(mailbox));
       mailbox._id = "mailbox:"+path;
       this.cache.get(mailbox._id).then((doc)=>{
-        console.log("found previous data: " + JSON.stringify(doc));
+        console.info("found previous data: " + JSON.stringify(doc));
         mailbox._rev = doc._rev;
       }).catch((err)=>{
-        console.log("no previous data found.");
+        console.info("no previous data found.");
       }).then((doc)=>{
-        console.log("storing new data: " + JSON.stringify(mailbox));
+        console.info("storing new data: " + JSON.stringify(mailbox));
         this.cache.put(mailbox);
       });
     });
