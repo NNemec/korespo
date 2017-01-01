@@ -1,12 +1,9 @@
 import { Injectable } from '@angular/core';
 
-// -- no idea why this does not work, I had to use ../requirements.js instead
-// import { ImapClient } from 'emailjs-imap-client';
-// import { ElectronStorage } from 'electron-storage';
+import { PouchCache } from './pouch-cache';
+
 declare const ImapClient: any;
 declare const ElectronStorage: any;
-declare const NodePouchDB: any;
-declare const ElectronRemote: any;
 
 export class AccountData {
   host: string = "";
@@ -20,7 +17,7 @@ export class ImapClientService {
   accountData: AccountData;
   imapClient: any;
   folders: any;
-  cache: any;
+  cache: PouchCache;
   selectedPath: string;
 
   constructor() {
@@ -28,6 +25,7 @@ export class ImapClientService {
     ElectronStorage.get('AccountData').then(data=>{
       this.accountData = data;
     });
+    this.cache = new PouchCache();
   }
 
   isLoggedIn(): boolean {
@@ -52,9 +50,10 @@ export class ImapClientService {
       console.info("logged in");
       ElectronStorage.set('AccountData', this.accountData);
       this.init();
-    }).catch(()=>{
+    }).catch((err)=>{
       console.error("login failed");
       this.deinit();
+      throw err;
     })
   }
 
@@ -64,12 +63,11 @@ export class ImapClientService {
   }
 
   init(): void {
-    this.cache = new NodePouchDB(ElectronRemote.app.getPath('userData') + "/imapcache:"+this.accountData.user+"@"+this.accountData.host+":"+this.accountData.port);
-    this.cache.info().then((info)=>{
-      console.info("created PouchDB: " + JSON.stringify(info));
-    }).catch((err)=>{
-      console.error("failed to create PouchDB: " + JSON.stringify(err));      
-    });
+    this.cache.open("imapcache:"+this.accountData.user+"@"+this.accountData.host+":"+this.accountData.port)
+      .catch((err)=>{
+        this.deinit();
+        throw err;
+      });
 
     this.selectedPath = undefined;
     this.imapClient.listMailboxes().then((mailboxes)=>{
@@ -80,24 +78,14 @@ export class ImapClientService {
   deinit(): void {
     this.folders = undefined;
     this.imapClient = undefined;    
-    this.cache = undefined;
     this.selectedPath = undefined;
+    this.cache.close();
   }
 
   select(path: string): void {
     this.selectedPath = path;
     this.imapClient.selectMailbox(path,{readOnly:true}).then((mailbox)=>{
-      console.info("received data: " + JSON.stringify(mailbox));
-      mailbox._id = "mailbox:"+path;
-      this.cache.get(mailbox._id).then((doc)=>{
-        console.info("found previous data: " + JSON.stringify(doc));
-        mailbox._rev = doc._rev;
-      }).catch((err)=>{
-        console.info("no previous data found.");
-      }).then((doc)=>{
-        console.info("storing new data: " + JSON.stringify(mailbox));
-        this.cache.put(mailbox);
-      });
+      this.cache.store("mailbox:"+path, mailbox);
     });
   }
 }
