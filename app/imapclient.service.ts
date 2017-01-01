@@ -46,40 +46,34 @@ export class ImapClientService {
 
     this.imapClient.logLevel = ImapClient.LOG_LEVEL_INFO;
 
-    this.imapClient.connect().then(()=>{
+    this.imapClient.connect().catch((err)=>{
+      console.error("login failed");
+      this.logout();
+      throw err;
+    }).then(()=>{
       console.info("logged in");
       ElectronStorage.set('AccountData', this.accountData);
-      this.init();
-    }).catch((err)=>{
-      console.error("login failed");
-      this.deinit();
-      throw err;
+      let cacheName = "imapcache:"+this.accountData.user+"@"+this.accountData.host+":"+this.accountData.port;
+      this.cache.open(cacheName).catch((err)=>{
+        this.logout();
+        throw err;
+      });
+
+      this.selectedPath = undefined;
+      this.imapClient.listMailboxes().then((mailboxes)=>{
+        this.folders = mailboxes.children;
+      });
     })
   }
 
   logout(): void {
-    this.imapClient.close();
-    this.deinit();
-  }
-
-  init(): void {
-    this.cache.open("imapcache:"+this.accountData.user+"@"+this.accountData.host+":"+this.accountData.port)
-      .catch((err)=>{
-        this.deinit();
-        throw err;
-      });
-
-    this.selectedPath = undefined;
-    this.imapClient.listMailboxes().then((mailboxes)=>{
-      this.folders = mailboxes.children;
-    });
-  }
-
-  deinit(): void {
-    this.folders = undefined;
-    this.imapClient = undefined;    
-    this.selectedPath = undefined;
+    if(this.imapClient) {
+      this.imapClient.close();
+      this.imapClient = undefined;    
+    }
     this.cache.close();
+    this.folders = undefined;
+    this.selectedPath = undefined;
   }
 
   select(path: string): void {
