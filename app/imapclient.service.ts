@@ -6,6 +6,7 @@ import { Injectable } from '@angular/core';
 declare const ImapClient: any;
 declare const ElectronStorage: any;
 declare const NodePouchDB: any;
+declare const ElectronRemote: any;
 
 export class AccountData {
   host: string = "";
@@ -61,7 +62,7 @@ export class ImapClientService {
   }
 
   init(): void {
-    this.cache = new NodePouchDB("../imapcache:"+this.accountData.user+"@"+this.accountData.host+":"+this.accountData.port);
+    this.cache = new NodePouchDB(ElectronRemote.app.getPath('userData') + "/imapcache:"+this.accountData.user+"@"+this.accountData.host+":"+this.accountData.port);
     this.cache.info().then((info)=>{
       console.log("created PouchDB: " + JSON.stringify(info));
     }).catch((err)=>{

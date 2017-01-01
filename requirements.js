@@ -4,3 +4,5 @@
 const ImapClient = require('emailjs-imap-client');
 const ElectronStorage = require('electron-storage');
 const NodePouchDB = require('pouchdb');
+
+const ElectronRemote = require('electron').remote;
