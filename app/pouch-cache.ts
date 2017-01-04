@@ -8,7 +8,7 @@ export class PouchCache {
     this.db = new NodePouchDB(ElectronRemote.app.getPath('userData') + "/" + name);
     return this.db.info().then((info)=>{
       console.info("opened PouchDB: " + name);
-      console.debug("PouchDB info: " + JSON.stringify(info);
+      console.debug("PouchDB info: " + JSON.stringify(info));
     }).catch((err)=>{
       console.error("failed to open PouchDB: " + name);
       console.debug("PouchDB info: " + JSON.stringify(err));
