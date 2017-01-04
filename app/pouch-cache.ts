@@ -77,22 +77,22 @@ export class PouchCache {
     return this.db.get(id).then((olddoc)=>{
       newdoc._rev = olddoc._rev;
       if(deepEqual(olddoc,newdoc)) {
-        console.info("previous data (unchanged): " + JSON.stringify(olddoc));
+        console.info("previous data (unchanged): " + id); // + JSON.stringify(olddoc));
         return {
           "ok": true,
           "id": id,
           "rev": olddoc._rev,
         };
       } else {
-        console.info("found previous data: " + JSON.stringify(olddoc));
+        console.info("found previous data: " + id); // + JSON.stringify(olddoc));
         store = true;
       }
     }).catch((err)=>{
       console.info("no previous data found.");
       store = true;
-    }).then((doc)=>{
+    }).then(()=>{
       if(store) {
-        console.info("storing new data: " + JSON.stringify(newdoc));
+        console.info("storing new data: " + id); // + JSON.stringify(newdoc));
         return this.db.put(newdoc);
       }
     });
