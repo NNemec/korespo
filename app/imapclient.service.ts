@@ -57,13 +57,10 @@ export class ImapClientService {
       this.cache.open(cacheName).catch((err)=>{
         this.logout();
         throw err;
+      }).then(()=>{
+        this.updateMailboxes();
       });
-
-      this.selectedPath = undefined;
-      this.imapClient.listMailboxes().then((mailboxes)=>{
-        this.folders = mailboxes.children;
-      });
-    })
+    });
   }
 
   logout(): void {
@@ -74,6 +71,14 @@ export class ImapClientService {
     this.cache.close();
     this.folders = undefined;
     this.selectedPath = undefined;
+  }
+
+  updateMailboxes(): void {
+    this.selectedPath = undefined;
+    this.imapClient.listMailboxes().then((mailboxes)=>{
+      this.cache.store("mailboxes", mailboxes);
+      this.folders = mailboxes.children;
+    });
   }
 
   select(path: string): void {
