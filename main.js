@@ -1,6 +1,9 @@
 const { app, BrowserWindow } = require('electron')
 
-require('electron-reload')(__dirname);
+const path = require('path');
+require('electron-reload')(__dirname, {
+  electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
+});
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.

@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "postinstall": "electron-rebuild",
-    "start": "tsc && concurrently \"npm run tsc:w\" \"electron .\" ",
+    "start": "tsc && concurrently -k --success first \"npm run tsc:w\" \"electron .\"",
     "tsc": "tsc",
     "tsc:w": "tsc -w"
   },
