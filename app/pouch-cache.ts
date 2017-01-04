@@ -4,18 +4,33 @@ declare const deepEqual: any;
 
 export class PouchCache {
   db: any;
+  observed = new Map<string,any>();
+
+  isOpen(): boolean {
+    return this.db;
+  }
 
   open(name: string): Promise<void> {
-    this.db = new NodePouchDB(ElectronRemote.app.getPath('userData') + "/" + name);
-    return this.db.info().then((info)=>{
-      console.info("opened PouchDB: " + name);
-      console.debug("PouchDB info: " + JSON.stringify(info));
-    }).catch((err)=>{
+    let db = new NodePouchDB(ElectronRemote.app.getPath('userData') + "/" + name);
+    return db.info().catch((err)=>{
       console.error("failed to open PouchDB: " + name);
       console.debug("PouchDB info: " + JSON.stringify(err));
-      this.db.close();
-      this.db = undefined;
+      db.close();
       throw err;
+    }).then((info)=>{
+      console.info("opened PouchDB: " + name);
+      console.debug("PouchDB info: " + JSON.stringify(info));
+      this.db = db;
+      this.db.changes({
+        since: 'now',
+        live: true,
+      }).on('change', (change) => {
+        this.onChange(change.id);
+      }).on('complete', (info) => {
+        console.info("PouchCache: changes() was cancelled:",JSON.stringify(info));
+      }).on('error', function (err) {
+        console.error("PouchCache onChangeError:",err);
+      });
     });
   }
 
@@ -23,6 +38,36 @@ export class PouchCache {
     if(this.db) {
       this.db.close();
       this.db = undefined;
+    }
+  }
+
+  onChange(id: string): void {
+    if(this.observed.has(id)) {
+      console.info("PouchCache onChange - updating: ",id);
+      this.db.get(id).then((doc) => {
+        Object.assign(this.observed.get(id), doc);
+      });
+    } else {
+      console.info("PouchCache onChange - ignoring: ",id);
+    }
+  }
+
+  retrieve(id: string, options: any): Promise<any> {
+    if(this.observed.has(id)) {
+      return Promise.resolve(this.observed.get(id));
+    } else {
+      return this.db.get(id).catch((err) => {
+        if(options.default) {
+          return options.default;
+        } else {
+          throw err;
+        }
+      }).then((doc) => {
+        if(options.observe) {
+          this.observed.set(id,doc);
+        }
+        return doc;
+      });
     }
   }
 

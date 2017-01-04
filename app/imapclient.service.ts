@@ -16,7 +16,7 @@ export class AccountData {
 export class ImapClientService {
   accountData: AccountData;
   imapClient: any;
-  folders: any;
+  mailboxes: any;
   cache: PouchCache;
   selectedPath: string;
 
@@ -29,7 +29,7 @@ export class ImapClientService {
   }
 
   isLoggedIn(): boolean {
-    return this.imapClient;
+    return this.imapClient && this.mailboxes && this.cache.isOpen();
   }
 
   login(): void {
@@ -58,6 +58,12 @@ export class ImapClientService {
         this.logout();
         throw err;
       }).then(()=>{
+        this.cache.retrieve("mailboxes",{
+          observe: true,
+          default: { root: true, children: []},
+        }).then((mailboxes) => {
+          this.mailboxes = mailboxes;
+        });
         this.updateMailboxes();
       });
     });
@@ -69,7 +75,7 @@ export class ImapClientService {
       this.imapClient = undefined;    
     }
     this.cache.close();
-    this.folders = undefined;
+    this.mailboxes = undefined;
     this.selectedPath = undefined;
   }
 
@@ -77,7 +83,6 @@ export class ImapClientService {
     this.selectedPath = undefined;
     this.imapClient.listMailboxes().then((mailboxes)=>{
       this.cache.store("mailboxes", mailboxes);
-      this.folders = mailboxes.children;
     });
   }
 
