@@ -32,6 +32,7 @@
     "@angular/upgrade": "~2.2.0",
     "angular-in-memory-web-api": "0.1.13",
     "core-js": "^2.4.1",
+    "deep-equal": "1.0.1",
     "electron-reload": "~1.1.0",
     "electron-storage": "1.0.7",
     "emailjs-imap-client": "2.0.3",

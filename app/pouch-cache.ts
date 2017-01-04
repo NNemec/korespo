@@ -1,5 +1,6 @@
 declare const NodePouchDB: any;
 declare const ElectronRemote: any;
+declare const deepEqual: any;
 
 export class PouchCache {
   db: any;
@@ -27,14 +28,28 @@ export class PouchCache {
 
   store(id: string,newdoc: any): Promise<any> {
     newdoc._id = id;
+    let store = false;
     return this.db.get(id).then((olddoc)=>{
-      console.info("found previous data: " + JSON.stringify(olddoc));
       newdoc._rev = olddoc._rev;
+      if(deepEqual(olddoc,newdoc)) {
+        console.info("previous data (unchanged): " + JSON.stringify(olddoc));
+        return {
+          "ok": true,
+          "id": id,
+          "rev": olddoc._rev,
+        };
+      } else {
+        console.info("found previous data: " + JSON.stringify(olddoc));
+        store = true;
+      }
     }).catch((err)=>{
       console.info("no previous data found.");
+      store = true;
     }).then((doc)=>{
-      console.info("storing new data: " + JSON.stringify(newdoc));
-      return this.db.put(newdoc);
+      if(store) {
+        console.info("storing new data: " + JSON.stringify(newdoc));
+        return this.db.put(newdoc);
+      }
     });
   }
 }
