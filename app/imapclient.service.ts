@@ -82,7 +82,17 @@ export class ImapClientService {
   updateMailboxes(): void {
     this.selectedPath = undefined;
     this.imapClient.listMailboxes().then((mailboxes)=>{
-      this.cache.store("mailboxes", mailboxes);
+      return this.cache.store("mailboxes", mailboxes);
+    }).then(()=>{
+/*
+      let updateRecursively = ((children:any[])=>{
+        for(let child of children) {
+          this.select(child.path);
+          updateRecursively(child.children);
+        }
+      })
+      updateRecursively(this.mailboxes.children)
+*/
     });
   }
 
