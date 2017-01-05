@@ -97,4 +97,11 @@ export class PouchCache {
       }
     });
   }
+
+  query_ids_by_prefix(prefix:string): Promise<any> {
+    return this.db.allDocs({
+      startkey: prefix,
+      endkey: prefix + '\uffff',
+    });
+  };
 }
