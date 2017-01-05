@@ -1,10 +1,15 @@
+import { Observable, BehaviorSubject, Subscription } from 'rxjs';
+
 declare const NodePouchDB: any;
 declare const ElectronRemote: any;
 declare const deepEqual: any;
 
+interface Document {
+  _id: string;
+}
+
 export class PouchCache {
   db: any;
-  observed = new Map<string,any>();
 
   isOpen(): boolean {
     return this.db;
@@ -39,35 +44,39 @@ export class PouchCache {
       this.db.close();
       this.db = undefined;
     }
+    this.observed.forEach((subject,id)=>{subject.complete()});
+    this.observed.clear();
   }
 
-  onChange(id: string): void {
+  retrieve(id: string): Promise<any> {
+    return this.db.get(id);
+  }
+
+  private observed = new Map<string,BehaviorSubject<Document>>();
+
+  observe(id: string): Observable<Document> {
+    if(!this.observed.has(id)) {
+      this.observed[id] = new BehaviorSubject({_id: ""});
+
+      this.retrieve(id).then((doc)=>{
+        this.observed[id].next(doc);
+      })
+    }
+    return this.observed[id].filter(doc => doc._id != "");
+  }
+
+  private onChange(id: string): void {
     if(this.observed.has(id)) {
+      if(!this.observed[id].hasObservers()) {
+        this.observed.delete(id);
+        console.info("PouchCache onChange - dropping: ",id);
+      }
       console.info("PouchCache onChange - updating: ",id);
       this.db.get(id).then((doc) => {
-        Object.assign(this.observed.get(id), doc);
+        this.observed[id].next(doc);
       });
     } else {
       console.info("PouchCache onChange - ignoring: ",id);
-    }
-  }
-
-  retrieve(id: string, options: any): Promise<any> {
-    if(this.observed.has(id)) {
-      return Promise.resolve(this.observed.get(id));
-    } else {
-      return this.db.get(id).catch((err) => {
-        if(options.default) {
-          return options.default;
-        } else {
-          throw err;
-        }
-      }).then((doc) => {
-        if(options.observe) {
-          this.observed.set(id,doc);
-        }
-        return doc;
-      });
     }
   }
 

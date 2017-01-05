@@ -58,11 +58,8 @@ export class ImapClientService {
         this.logout();
         throw err;
       }).then(()=>{
-        this.cache.retrieve("mailboxes",{
-          observe: true,
-          default: { root: true, children: []},
-        }).then((mailboxes) => {
-          this.mailboxes = mailboxes;
+        this.cache.observe("mailboxes").subscribe((doc)=>{
+          this.mailboxes = doc;
         });
         this.updateMailboxes();
       });
