@@ -1,4 +1,5 @@
-import { Observable, BehaviorSubject, Subscription } from 'rxjs';
+import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 declare const NodePouchDB: any;
 declare const ElectronRemote: any;
