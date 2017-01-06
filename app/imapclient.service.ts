@@ -1,4 +1,4 @@
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable } from '@angular/core';
 
 import { PouchCache } from './pouch-cache';
 
@@ -12,18 +12,22 @@ export class AccountData {
 }
 
 @Injectable()
-export class ImapClientService implements OnInit {
+export class ImapClientService {
   cache = new PouchCache;
   accountData = new AccountData;
   imapClient: any;
   mailboxes: any = { root: true, children: [] };
 
+  constructor() {
+    this.open();
+  }
+
   isOpen(): boolean {
     return this.cache.isOpen();
   }
 
-  ngOnInit() {
-    return this.cache.open("imapcache").catch((err)=>{
+  open(): void {
+    this.cache.open("imapcache").catch((err)=>{
       throw err;
     }).then(()=>{
       this.cache.retrieve("account").then((doc) => {
@@ -40,11 +44,13 @@ export class ImapClientService implements OnInit {
   }
 
   isLoggedIn(): boolean {
-    return this.imapClient && this.mailboxes && this.cache.isOpen();
+    return this.imapClient && this.imapClient.this.mailboxes && this.cache.isOpen();
   }
 
   login(): Promise<any> {
-    this.imapClient = new ImapClient(
+    this.cache.store("account",this.accountData);
+
+    let client = new ImapClient(
       this.accountData.host,
       this.accountData.port,
       {
@@ -55,15 +61,19 @@ export class ImapClientService implements OnInit {
         requireTLS: true,
       });
 
-    this.imapClient.logLevel = ImapClient.LOG_LEVEL_INFO;
+//    client.logLevel = ImapClient.LOG_LEVEL_INFO;
 
-    return this.imapClient.connect().catch((err)=>{
-      console.error("login failed");
-      this.logout();
+    return client.connect().catch((err)=>{
+      console.error("login failed: " + err);
+      client.close();
       throw err;
     }).then(()=>{
+      client.onerror = (err)=>{
+        console.error("imapClient error: " + err);
+        this.logout();
+      }
+      this.imapClient = client;      
       console.info("logged in");
-      this.cache.store("account",this.accountData);
     });
   }
 
@@ -72,7 +82,6 @@ export class ImapClientService implements OnInit {
       this.imapClient.close();
       this.imapClient = undefined;    
     }
-    this.mailboxes = undefined;
   }
 
   updateMailboxes(): Promise<any> {

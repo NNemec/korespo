@@ -1,5 +1,4 @@
-import { Observable } from 'rxjs/Observable';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable, BehaviorSubject } from 'rxjs/Rx';
 
 declare const NodePouchDB: any;
 declare const ElectronRemote: any;
@@ -57,24 +56,25 @@ export class PouchCache {
 
   observe(id: string): Observable<Document> {
     if(!this.observed.has(id)) {
-      this.observed[id] = new BehaviorSubject({_id: ""});
+      this.observed.set(id, new BehaviorSubject({_id: ""}));
 
       this.retrieve(id).then((doc)=>{
-        this.observed[id].next(doc);
+        this.observed.get(id).next(doc);
       })
     }
-    return this.observed[id].filter(doc => doc._id != "");
+    return this.observed.get(id).filter(doc => doc._id != "");
   }
 
   private onChange(id: string): void {
     if(this.observed.has(id)) {
-      if(!this.observed[id].hasObservers()) {
+//      if(!this.observed.get(id).hasObservers()) {  // not yet implemented in rxjs 5.0.3
+      if(this.observed.get(id).observers.length == 0) { // will break
         this.observed.delete(id);
         console.info("PouchCache onChange - dropping: ",id);
       }
       console.info("PouchCache onChange - updating: ",id);
       this.db.get(id).then((doc) => {
-        this.observed[id].next(doc);
+        this.observed.get(id).next(doc);
       });
     } else {
       console.info("PouchCache onChange - ignoring: ",id);
