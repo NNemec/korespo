@@ -32,6 +32,7 @@ export class ImapClientService {
     }).then(()=>{
       this.cache.retrieve("account").then((doc) => {
         this.accountData = doc;
+      }).catch(()=>{
       });
       this.cache.observe("mailboxes").subscribe((doc)=>{
         this.mailboxes = doc;
@@ -44,7 +45,7 @@ export class ImapClientService {
   }
 
   isLoggedIn(): boolean {
-    return this.imapClient && this.imapClient.this.mailboxes && this.cache.isOpen();
+    return this.imapClient && this.cache.isOpen();
   }
 
   login(): Promise<any> {
@@ -52,7 +53,7 @@ export class ImapClientService {
 
     let client = new ImapClient(
       this.accountData.host,
-      this.accountData.port,
+      Number(this.accountData.port),
       {
         auth: {
           user: this.accountData.user,

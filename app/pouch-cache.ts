@@ -60,9 +60,11 @@ export class PouchCache {
 
       this.retrieve(id).then((doc)=>{
         this.observed.get(id).next(doc);
-      })
+      }).catch((err)=>{
+//        this.observed.get(id).error(`error observing '${id}': ` + err);
+      });
     }
-    return this.observed.get(id).filter(doc => doc._id != "");
+    return this.observed.get(id).filter(doc => doc._id == id);
   }
 
   private onChange(id: string): void {
@@ -75,6 +77,8 @@ export class PouchCache {
       console.info("PouchCache onChange - updating: ",id);
       this.db.get(id).then((doc) => {
         this.observed.get(id).next(doc);
+      }).catch((err)=>{
+        this.observed.get(id).error(`in change notification for '${id}': ` + err);
       });
     } else {
       console.info("PouchCache onChange - ignoring: ",id);
