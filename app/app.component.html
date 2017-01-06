@@ -11,4 +11,4 @@
   <button (click)="imapClientService.updateMailboxes()">update</button>
   <button (click)="imapClientService.updateAll()">update all</button>
 </div>
-<tree-view [folders]="imapClientService.mailboxes.children"></tree-view>
+<folder-view></folder-view>

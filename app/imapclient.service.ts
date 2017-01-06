@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 
+import { Subject } from 'rxjs/Rx';
+
 import { PouchCache } from './pouch-cache';
 
 declare const ImapClient: any;
@@ -17,6 +19,7 @@ export class ImapClientService {
   accountData = new AccountData;
   imapClient: any;
   mailboxes: any = { root: true, children: [] };
+  onChanged = new Subject<void>();
 
   constructor() {
     this.open();
@@ -36,6 +39,7 @@ export class ImapClientService {
       });
       this.cache.observe("mailboxes").subscribe((doc)=>{
         this.mailboxes = doc;
+        this.onChanged.next();
       });
     })
   }
