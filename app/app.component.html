@@ -8,7 +8,7 @@
 </div>
 <div *ngIf="imapClientService.isLoggedIn()">
   <button (click)="imapClientService.logout()">logout</button>
-  <button (click)="imapClientService.updateMailboxes()">update</button>
-  <button (click)="imapClientService.updateAll()">update all</button>
+  <button (click)="imapClientService.updateMailboxes()">⟳</button>
+  <button (click)="imapClientService.updateAll()">[⟳⟳]</button>
 </div>
 <folder-view></folder-view>

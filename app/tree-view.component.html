@@ -1,7 +1,10 @@
 <ul>
     <li *ngFor="let f of folders">
         <!--span><input type="checkbox" [checked]="dir.checked" (click)="dir.check()"    /></span--> 
-        <span class="folder" (click)="imapClientService.updateMailbox(f.path)">{{ f.name }}</span>
+        {{ f.name }}
+        
+        <button (click)="imapClientService.updateMailbox(f.path)">⟳</button>
+        
         <div *ngIf="f.children.length > 0">
             <!--ul >
                 <li *ngFor="let file of dir.files">{{file}}</li>
