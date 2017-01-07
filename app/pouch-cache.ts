@@ -15,17 +15,19 @@ export class PouchCache {
     return this.db;
   }
 
+  constructor(name: string) {
+    this.open(name);
+  }
+
   open(name: string): Promise<void> {
-    let db = new NodePouchDB(ElectronRemote.app.getPath('userData') + "/" + name);
-    return db.info().catch((err)=>{
+    this.db = new NodePouchDB(ElectronRemote.app.getPath('userData') + "/" + name);
+    return this.db.info().catch((err)=>{
       console.error("failed to open PouchDB: " + name);
       console.debug("PouchDB info: " + JSON.stringify(err));
-      db.close();
+      this.db.close();
       throw err;
     }).then((info)=>{
-      console.info("opened PouchDB: " + name);
-      console.debug("PouchDB info: " + JSON.stringify(info));
-      this.db = db;
+      console.info("successfully opened PouchDB: " + name);
     });
   }
 

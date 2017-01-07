@@ -15,7 +15,7 @@ export class AccountData {
 
 @Injectable()
 export class ImapClientService {
-  cache = new PouchCache;
+  cache: PouchCache;
   accountData = new AccountData;
   imapClient: any;
   onStatusChanged = new Subject<void>();
@@ -29,14 +29,12 @@ export class ImapClientService {
   }
 
   open(): void {
-    this.cache.open("imapcache").catch((err)=>{
-      throw err;
-    }).then(()=>{
-      this.cache.retrieve("account").then((doc) => {
-        this.accountData = doc;
-      }).catch(()=>{
-      });
-    })
+    this.cache = new PouchCache("imapcache");
+
+    this.cache.retrieve("account").then((doc) => {
+      this.accountData = doc;
+    }).catch(()=>{
+    });
   }
 
   close(): void {
