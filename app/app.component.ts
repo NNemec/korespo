@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 import { ImapClientService } from './imapclient.service';
 
@@ -7,15 +7,8 @@ import { ImapClientService } from './imapclient.service';
   selector: 'my-app',
   templateUrl: 'app.component.html'
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   constructor(
     private imapClientService: ImapClientService,
-    private cd: ChangeDetectorRef
   ) {}
-
-  ngOnInit() {
-    this.imapClientService.onStatusChanged.subscribe(() => {
-      this.cd.detectChanges();
-    })
-  }
 }
