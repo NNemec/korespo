@@ -63,7 +63,7 @@ export class ImapClientService {
         requireTLS: true,
       });
 
-//    client.logLevel = ImapClient.LOG_LEVEL_INFO;
+    client.logLevel = ImapClient.LOG_LEVEL_INFO;
 
     return client.connect().catch((err)=>{
       console.error("login failed: " + err);
