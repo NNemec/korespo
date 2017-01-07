@@ -42,13 +42,14 @@ export class PouchCache {
 
   observe(id: string, options?: {waitforcreation?: boolean}): Observable<Document> {
     return Observable.create((observer) => {
-      if(options && options.waitforcreation)
-        this.db.get(id).then((doc)=>{
+      this.db.get(id).then((doc)=>{
           observer.next(doc);
-        }).catch((err)=>{
+      }).catch((err)=>{
+        if(options && options.waitforcreation && err.name == "not_found") {          
+          // if it does not yet exist, observe anyway
+        } else
           observer.error(err);
-          // if it does not yet exist, observe anyway 
-        });
+      });
 
       let eventemitter = this.db.changes({
         doc_ids:[id],
