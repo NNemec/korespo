@@ -14,7 +14,7 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.imapClientService.onChanged.subscribe(() => {
+    this.imapClientService.onStatusChanged.subscribe(() => {
       this.cd.detectChanges();
     })
   }

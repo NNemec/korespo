@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Subject } from 'rxjs/Rx';
+import { Observable, Subject } from 'rxjs/Rx';
 
 import { PouchCache } from './pouch-cache';
 
@@ -18,8 +18,7 @@ export class ImapClientService {
   cache = new PouchCache;
   accountData = new AccountData;
   imapClient: any;
-  mailboxes: any = { root: true, children: [] };
-  onChanged = new Subject<void>();
+  onStatusChanged = new Subject<void>();
 
   constructor() {
     this.open();
@@ -37,20 +36,15 @@ export class ImapClientService {
         this.accountData = doc;
       }).catch(()=>{
       });
-      this.cache.observe("mailboxes",{waitforcreation:true}).subscribe(
-        doc=>{
-          this.mailboxes = doc;
-          this.onChanged.next();
-        },
-        err=>{
-          throw err;
-        },
-      );
     })
   }
 
   close(): void {
     this.cache.close();
+  }
+
+  mailboxes(): Observable<any> {
+    return this.cache.observe("mailboxes",{waitforcreation:true});
   }
 
   isLoggedIn(): boolean {
@@ -135,14 +129,16 @@ export class ImapClientService {
   }
 
   updateAll(): void {
-    this.updateMailboxes().then(()=>{
-      let updateRecursively = ((children:any[])=>{
-        for(let child of children) {
-          this.updateMailbox(child.path);
-          updateRecursively(child.children);
-        }
-      })
-      updateRecursively(this.mailboxes.children);
-    });
+    this.cache.retrieve("mailboxes").then((mailboxes)=>{
+      this.updateMailboxes().then(()=>{
+        let updateRecursively = ((children:any[])=>{
+          for(let child of children) {
+            this.updateMailbox(child.path);
+            updateRecursively(child.children);
+          }
+        })
+        updateRecursively(mailboxes.children);
+      });
+    })
   }
 }
