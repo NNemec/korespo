@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 
 import { Observable, Subject } from 'rxjs/Rx';
 
@@ -20,7 +20,7 @@ export class ImapClientService {
   imapClient: any;
   onStatusChanged = new Subject<void>();
 
-  constructor() {
+  constructor(private ngZone: NgZone) {
     this.open();
   }
 
@@ -41,8 +41,17 @@ export class ImapClientService {
     this.cache.close();
   }
 
+  // PouchCache change notification do not run inside ngZone. Need this wrapper in between
+  ngZoneWrap<T>(obs: Observable<T>): Observable<T> {
+    return new Observable<T>((observer)=>{
+      obs.subscribe((val)=>{
+        this.ngZone.run(()=>observer.next(val));
+      })
+    });
+  }
+
   mailboxes(): Observable<any> {
-    return this.cache.observe("mailboxes",{waitforcreation:true});
+    return this.ngZoneWrap(this.cache.observe("mailboxes",{waitforcreation:true}));
   }
 
   isLoggedIn(): boolean {
