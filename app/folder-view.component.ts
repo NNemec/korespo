@@ -1,6 +1,4 @@
-import { Component } from '@angular/core';
-
-import { Observable } from 'rxjs/Rx';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 
 import { ImapClientService } from './imapclient.service';
 
@@ -9,13 +7,21 @@ import { ImapClientService } from './imapclient.service';
   selector: 'folder-view',
   templateUrl: 'folder-view.component.html'
 })
-export class FolderViewComponent {
-  mailboxes: Observable<any>;
+export class FolderViewComponent implements OnInit, OnDestroy {
+  mailboxes = [];
+  subscription: any;
 
   constructor(
-    private imapClientService: ImapClientService,
-  ) {
-    this.mailboxes = imapClientService.mailboxes();
-    console.log(this.mailboxes)
+    private imapClientService: ImapClientService
+  ) {}
+
+  ngOnInit() {
+    this.subscription = this.imapClientService.mailboxes().subscribe((mailboxes)=>{
+      this.mailboxes = mailboxes.children;
+    });
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 }
