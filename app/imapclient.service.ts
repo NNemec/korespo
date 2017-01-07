@@ -37,7 +37,7 @@ export class ImapClientService {
         this.accountData = doc;
       }).catch(()=>{
       });
-      this.cache.observe("mailboxes").subscribe((doc)=>{
+      this.cache.observe("mailboxes",{waitforcreation:true}).subscribe((doc)=>{
         this.mailboxes = doc;
         this.onChanged.next();
       });

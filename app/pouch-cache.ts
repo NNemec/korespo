@@ -26,16 +26,6 @@ export class PouchCache {
       console.info("opened PouchDB: " + name);
       console.debug("PouchDB info: " + JSON.stringify(info));
       this.db = db;
-      this.db.changes({
-        since: 'now',
-        live: true,
-      }).on('change', (change) => {
-        this.onChange(change.id);
-      }).on('complete', (info) => {
-        console.info("PouchCache: changes() was cancelled:",JSON.stringify(info));
-      }).on('error', function (err) {
-        console.error("PouchCache onChangeError:",err);
-      });
     });
   }
 
@@ -44,45 +34,38 @@ export class PouchCache {
       this.db.close();
       this.db = undefined;
     }
-    this.observed.forEach((subject,id)=>{subject.complete()});
-    this.observed.clear();
   }
 
   retrieve(id: string): Promise<any> {
     return this.db.get(id);
   }
 
-  private observed = new Map<string,BehaviorSubject<Document>>();
+  observe(id: string, options?: {waitforcreation?: boolean}): Observable<Document> {
+    return Observable.create((observer) => {
+      if(options && options.waitforcreation)
+        this.db.get(id).then((doc)=>{
+          observer.next(doc);
+        }).catch((err)=>{
+          observer.error(err);
+          // if it does not yet exist, observe anyway 
+        });
 
-  observe(id: string): Observable<Document> {
-    if(!this.observed.has(id)) {
-      this.observed.set(id, new BehaviorSubject({_id: ""}));
-
-      this.retrieve(id).then((doc)=>{
-        this.observed.get(id).next(doc);
-      }).catch((err)=>{
-//        this.observed.get(id).error(`error observing '${id}': ` + err);
+      let eventemitter = this.db.changes({
+        doc_ids:[id],
+        since: 'now',
+        live: true,
+        include_docs:true,
+      }).on('change',(info)=>{
+        observer.next(info.doc);
+      }).on('complete',(info)=>{
+        observer.complete();
+      }).on('error',(err)=>{
+        observer.error(err);
       });
-    }
-    return this.observed.get(id).filter(doc => doc._id == id);
-  }
 
-  private onChange(id: string): void {
-    if(this.observed.has(id)) {
-//      if(!this.observed.get(id).hasObservers()) {  // not yet implemented in rxjs 5.0.3
-      if(this.observed.get(id).observers.length == 0) { // will break
-        this.observed.delete(id);
-        console.info("PouchCache onChange - dropping: ",id);
-      }
-      console.info("PouchCache onChange - updating: ",id);
-      this.db.get(id).then((doc) => {
-        this.observed.get(id).next(doc);
-      }).catch((err)=>{
-        this.observed.get(id).error(`in change notification for '${id}': ` + err);
-      });
-    } else {
-      console.info("PouchCache onChange - ignoring: ",id);
-    }
+      // return unsubscribe handler
+      return ()=>{ eventemitter.cancel(); }
+    });
   }
 
   store(id: string,newdoc: any): Promise<any> {
