@@ -3,8 +3,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule }   from '@angular/forms';
 
 import { AppComponent }        from './app.component';
-import { FolderViewComponent } from './folder-view.component';
-import { TreeViewComponent }   from './tree-view.component';
+import { AccountComponent } from './account.component';
+import { FolderComponent }   from './folder.component';
 
 import { ImapClientService } from './imapclient.service';
 
@@ -15,8 +15,8 @@ import { ImapClientService } from './imapclient.service';
   ],
   declarations: [
     AppComponent,
-    FolderViewComponent,
-    TreeViewComponent,
+    AccountComponent,
+    FolderComponent,
   ],
   providers:    [
     ImapClientService,

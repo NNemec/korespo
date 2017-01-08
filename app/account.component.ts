@@ -4,10 +4,10 @@ import { ImapClientService } from './imapclient.service';
 
 @Component({
   moduleId: module.id,
-  selector: 'folder-view',
-  templateUrl: 'folder-view.component.html'
+  selector: 'account',
+  templateUrl: 'account.component.html'
 })
-export class FolderViewComponent implements OnInit, OnDestroy {
+export class AccountComponent implements OnInit, OnDestroy {
   mailboxes = [];
   subscription: any;
 

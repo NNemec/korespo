@@ -4,11 +4,11 @@ import { ImapClientService } from './imapclient.service';
 
 @Component({
   moduleId: module.id,
-  selector: 'tree-view',
-  templateUrl: './tree-view.component.html',
-  styleUrls: ['./tree-view.component.css']
+  selector: 'folder',
+  templateUrl: './folder.component.html',
+  styleUrls: ['./folder.component.css']
 })
-export class TreeViewComponent {
+export class FolderComponent {
   @Input() folders: any[];
   constructor(private imapClientService: ImapClientService) { }
 }
