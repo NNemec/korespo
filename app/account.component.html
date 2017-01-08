@@ -2,5 +2,13 @@
              selectionMode="multiple" 
              [(selection)]="selectedFolders"
              (onNodeSelect)="onSelectFolders($event)">
-    <p-column field="name"></p-column>
+    <p-column field="name" header="Name"></p-column>
+    <p-column header="#">
+        <template let-node="rowData" pTemplate="body">
+            <button pButton (click)="imapClientService.updateMailbox(node.data.path)"
+                    [disabled]="!imapClientService.isLoggedIn()"
+                    icon="fa-refresh" ></button>
+        </template>
+    </p-column>
+
 </p-treeTable>
