@@ -2,6 +2,8 @@ import { NgModule }      from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule }   from '@angular/forms';
 
+import { ButtonModule } from 'primeng/primeng';
+import { DialogModule } from 'primeng/primeng';
 import { InputTextModule } from 'primeng/primeng';
 
 import { AppComponent }        from './app.component';
@@ -15,6 +17,8 @@ import { ImapClientService } from './imapclient.service';
     BrowserModule,
     FormsModule,
 
+    ButtonModule,
+    DialogModule,
     InputTextModule,
   ],
   declarations: [

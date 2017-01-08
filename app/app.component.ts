@@ -8,7 +8,13 @@ import { ImapClientService } from './imapclient.service';
   templateUrl: 'app.component.html'
 })
 export class AppComponent {
+  showSetup: boolean = false;
+
   constructor(
     private imapClientService: ImapClientService,
   ) {}
+
+  toggleSetup() {
+    this.showSetup = !this.showSetup;
+  }
 }
