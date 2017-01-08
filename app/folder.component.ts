@@ -9,6 +9,6 @@ import { ImapClientService } from './imapclient.service';
   styleUrls: ['./folder.component.css']
 })
 export class FolderComponent {
-  @Input() folders: any[];
+  @Input() folder: any;
   constructor(private imapClientService: ImapClientService) { }
 }

@@ -1,3 +1,5 @@
-<div>
-<folder [folders]="mailboxes"></folder>
-</div>
+<ul>
+    <li *ngFor="let mailbox of mailboxes">
+      <folder [folder]="mailbox"></folder>
+    </li>
+</ul>
