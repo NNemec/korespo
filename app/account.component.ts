@@ -1,5 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
+import { TreeNode } from 'primeng/primeng';
+
 import { ImapClientService } from './imapclient.service';
 
 @Component({
@@ -8,7 +10,7 @@ import { ImapClientService } from './imapclient.service';
   templateUrl: 'account.component.html'
 })
 export class AccountComponent implements OnInit, OnDestroy {
-  mailboxes = [];
+  treeData: TreeNode[] = [];
   subscription: any;
 
   constructor(
@@ -17,7 +19,14 @@ export class AccountComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscription = this.imapClientService.mailboxes().subscribe((mailboxes)=>{
-      this.mailboxes = mailboxes.children;
+      let converter = (imapNode)=>{
+        let res: TreeNode = {data:imapNode}
+        if("children" in imapNode) {
+          res.children = imapNode.children.map(converter);
+        }
+        return res;
+      }
+      this.treeData = mailboxes.children.map(converter);
     });
   }
 

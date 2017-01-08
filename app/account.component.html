@@ -1,5 +1,3 @@
-<ul>
-    <li *ngFor="let mailbox of mailboxes">
-      <folder [folder]="mailbox"></folder>
-    </li>
-</ul>
+<p-treeTable [value]="treeData">
+    <p-column field="name"></p-column>
+</p-treeTable>
