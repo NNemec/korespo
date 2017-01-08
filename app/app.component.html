@@ -1,5 +1,5 @@
-<div fxLayout="column">
-  <div fxFlex>
+<div fxLayout="column" style="height:100%">
+  <div fxFlexFill>
     <div *ngIf="! imapClientService.isLoggedIn()">
       <p-dialog header="Setup" [(visible)]="showSetup">
         <div> <label>host: </label> <input pInputText [(ngModel)]="imapClientService.accountData.host"> </div>
@@ -17,8 +17,8 @@
     </div>
   </div>
   <div fxFlex>
-    <div fxLayout="row" fxLayoutAlign="center center">
-      <div fxFlex="20">
+    <div fxLayout="row" style="height:100%">
+      <div fxFlexFill>
         <folder-tree></folder-tree>
       </div>
       <div fxFlex>

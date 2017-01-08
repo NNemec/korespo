@@ -7,7 +7,7 @@ import { ButtonModule }      from 'primeng/primeng';
 import { DialogModule }      from 'primeng/primeng';
 import { InputTextModule }   from 'primeng/primeng';
 import { SharedModule }      from 'primeng/primeng';
-import { TreeTableModule }   from 'primeng/primeng';
+import { TreeModule }        from 'primeng/primeng';
 
 import { AppComponent }      from './app.component';
 import { FolderTreeComponent }  from './folder-tree.component';
@@ -24,7 +24,7 @@ import { ImapClientService } from './imapclient.service';
     DialogModule,
     InputTextModule,
     SharedModule,
-    TreeTableModule,
+    TreeModule,
   ],
   declarations: [
     AppComponent,
