@@ -10,7 +10,7 @@ import { SharedModule }      from 'primeng/primeng';
 import { TreeTableModule }   from 'primeng/primeng';
 
 import { AppComponent }      from './app.component';
-import { AccountComponent }  from './account.component';
+import { FolderTreeComponent }  from './folder-tree.component';
 
 import { ImapClientService } from './imapclient.service';
 
@@ -28,7 +28,7 @@ import { ImapClientService } from './imapclient.service';
   ],
   declarations: [
     AppComponent,
-    AccountComponent,
+    FolderTreeComponent,
   ],
   providers:    [
     ImapClientService,

@@ -6,10 +6,10 @@ import { ImapClientService } from './imapclient.service';
 
 @Component({
   moduleId: module.id,
-  selector: 'account',
-  templateUrl: 'account.component.html'
+  selector: 'folder-tree',
+  templateUrl: 'folder-tree.component.html'
 })
-export class AccountComponent implements OnInit, OnDestroy {
+export class FolderTreeComponent implements OnInit, OnDestroy {
   treeData: TreeNode[] = [];
   subscription: any;
 
