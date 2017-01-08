@@ -1,17 +1,29 @@
-<h1>koresp - experimental email client</h1>
-<div *ngIf="! imapClientService.isLoggedIn()">
-  <p-dialog header="Setup" [(visible)]="showSetup">
-    <div> <label>host: </label> <input pInputText [(ngModel)]="imapClientService.accountData.host"> </div>
-    <div> <label>port: </label> <input pInputText [(ngModel)]="imapClientService.accountData.port"> </div>
-    <div> <label>user: </label> <input pInputText [(ngModel)]="imapClientService.accountData.user"> </div>
-    <div> <label>pass: </label> <input pInputText [(ngModel)]="imapClientService.accountData.pass"> </div>
-  </p-dialog>
-  <button pButton (click)="imapClientService.login()" icon="fa-sign-in" label="login"></button>
-  <button pButton (click)="toggleSetup()" icon="fa-sliders" label="setup"></button>
+<div fxLayout="column">
+  <div fxFlex>
+    <div *ngIf="! imapClientService.isLoggedIn()">
+      <p-dialog header="Setup" [(visible)]="showSetup">
+        <div> <label>host: </label> <input pInputText [(ngModel)]="imapClientService.accountData.host"> </div>
+        <div> <label>port: </label> <input pInputText [(ngModel)]="imapClientService.accountData.port"> </div>
+        <div> <label>user: </label> <input pInputText [(ngModel)]="imapClientService.accountData.user"> </div>
+        <div> <label>pass: </label> <input pInputText [(ngModel)]="imapClientService.accountData.pass"> </div>
+      </p-dialog>
+      <button pButton (click)="imapClientService.login()" icon="fa-sign-in" label="login"></button>
+      <button pButton (click)="toggleSetup()" icon="fa-sliders" label="setup"></button>
+    </div>
+    <div *ngIf="imapClientService.isLoggedIn()">
+      <button pButton (click)="imapClientService.logout()" icon="fa-sign-out" label="logout"></button>
+      <button pButton (click)="imapClientService.updateMailboxes()" icon="fa-refresh" label="refresh"></button>
+      <button pButton (click)="imapClientService.updateAll()" icon="fa-refresh" label="refresh all"></button>
+    </div>
+  </div>
+  <div fxFlex>
+    <div fxLayout="row" fxLayoutAlign="center center">
+      <div fxFlex="20">
+        <account></account>
+      </div>
+      <div fxFlex>
+        something
+      </div>
+    </div> 
+  </div>
 </div>
-<div *ngIf="imapClientService.isLoggedIn()">
-  <button pButton (click)="imapClientService.logout()" icon="fa-sign-out" label="logout"></button>
-  <button pButton (click)="imapClientService.updateMailboxes()" icon="fa-refresh" label="refresh"></button>
-  <button pButton (click)="imapClientService.updateAll()" icon="fa-refresh" label="refresh all"></button>
-</div>
-<account></account>
