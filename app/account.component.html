@@ -1,3 +1,6 @@
-<p-treeTable [value]="treeData">
+<p-treeTable [value]="treeData"
+             selectionMode="multiple" 
+             [(selection)]="selectedFolders"
+             (onNodeSelect)="onSelectFolders($event)">
     <p-column field="name"></p-column>
 </p-treeTable>

@@ -13,6 +13,8 @@ export class AccountComponent implements OnInit, OnDestroy {
   treeData: TreeNode[] = [];
   subscription: any;
 
+  selectedFolders: TreeNode[] = [];
+
   constructor(
     private imapClientService: ImapClientService
   ) {}
@@ -32,5 +34,9 @@ export class AccountComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  onSelectFolders(event) {
+    let selectedFolder = event.node
   }
 }
