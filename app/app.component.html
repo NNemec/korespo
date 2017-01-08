@@ -1,9 +1,9 @@
 <h1>koresp - experimental email client</h1>
 <div *ngIf="! imapClientService.isLoggedIn()">
-  <div> <label>host: </label> <input [(ngModel)]="imapClientService.accountData.host" placeholder="host"> </div>
-  <div> <label>port: </label> <input [(ngModel)]="imapClientService.accountData.port" placeholder="port"> </div>
-  <div> <label>user: </label> <input [(ngModel)]="imapClientService.accountData.user" placeholder="user"> </div>
-  <div> <label>pass: </label> <input [(ngModel)]="imapClientService.accountData.pass" placeholder="pass"> </div>
+  <div> <label>host: </label> <input [(ngModel)]="imapClientService.accountData.host" placeholder="host" pInputText> </div>
+  <div> <label>port: </label> <input [(ngModel)]="imapClientService.accountData.port" placeholder="port" pInputText> </div>
+  <div> <label>user: </label> <input [(ngModel)]="imapClientService.accountData.user" placeholder="user" pInputText> </div>
+  <div> <label>pass: </label> <input [(ngModel)]="imapClientService.accountData.pass" placeholder="pass" pInputText> </div>
   <button (click)="imapClientService.login()">login</button>
 </div>
 <div *ngIf="imapClientService.isLoggedIn()">
