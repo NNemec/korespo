@@ -1,7 +1,11 @@
 <!--span><input type="checkbox" [checked]="dir.checked" (click)="dir.check()"    /></span--> 
 {{ folder.name }}
 
-<button (click)="imapClientService.updateMailbox(f.path)">⟳</button>
+<!--{{ folder.specialUse }}-->
+{{ mailbox ? mailbox.exists : "?" }}
+
+<button (click)="imapClientService.updateMailbox(folder.path)"
+        [disabled]="!imapClientService.isLoggedIn()">⟳</button>
 
 <ul>
     <li *ngFor="let child of folder.children">

@@ -54,6 +54,10 @@ export class ImapClientService {
     return this.ngZoneWrap(this.cache.observe("mailboxes",{waitforcreation:true}));
   }
 
+  mailbox(path: string): Observable<any> {
+    return this.ngZoneWrap(this.cache.observe("mailbox:"+path,{waitforcreation:true}));    
+  }
+
   isLoggedIn(): boolean {
     return this.imapClient && this.cache.isOpen();
   }
@@ -96,14 +100,21 @@ export class ImapClientService {
   }
 
   updateMailboxes(): Promise<any> {
+    if(!this.isLoggedIn())
+      throw "imapClient is not logged in!"
+
     return this.imapClient.listMailboxes().then((mailboxes)=>{
       return this.cache.store("mailboxes", mailboxes);
     });
   }
 
   updateMailbox(path: string): void {
+    if(!this.isLoggedIn())
+      throw "imapClient is not logged in!"
+
     this.imapClient.selectMailbox(path,{readOnly:true}).then((mailbox)=>{
       return this.cache.store("mailbox:"+path, mailbox);
+/*
     }).then(()=>{
       let p_imapmsgs = this.imapClient.listMessages(path,"1:*",['uid']);
       let p_cachemsgs = this.cache.query_ids_by_prefix("envelope:"+path+":");
@@ -132,6 +143,7 @@ export class ImapClientService {
       return this.cache.query_ids_by_prefix("envelope:"+path+":");
     }).then((messages)=>{
       // console.log("retrieved messages: " + JSON.stringify(messages,null,'\t'));
+*/
     });
   }
 

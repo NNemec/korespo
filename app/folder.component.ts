@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 
 import { ImapClientService } from './imapclient.service';
 
@@ -10,5 +10,21 @@ import { ImapClientService } from './imapclient.service';
 })
 export class FolderComponent {
   @Input() folder: any;
-  constructor(private imapClientService: ImapClientService) { }
+
+  mailbox = {};
+  subscription: any;
+
+  constructor(
+    private imapClientService: ImapClientService
+  ) {}
+
+  ngOnInit() {
+    this.subscription = this.imapClientService.mailbox(this.folder.path).subscribe((mailbox)=>{
+      this.mailbox = mailbox;
+    });
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
 }
