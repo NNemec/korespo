@@ -61,12 +61,12 @@ export class ImapClientService {
 
   observe_messages(path: string): Observable<any> {
     return new Observable<any>((observer)=>{
-      let liveFeed = this.cache.liveFeed_by_id_prefix("envelope:"+path+":");
-      liveFeed.on("update",(update,aggregate)=>{
+      let liveFeed = this.cache.liveFeed_by_id_prefix("envelope:"+path+":")
+      .on("update",(update,aggregate)=>{
         this.ngZone.run(()=>observer.next(aggregate));
       })
       return ()=>liveFeed.cancel();
-    })
+    });//.throttleTime(50 /* ms */);
   }
 
   isLoggedIn(): boolean {
@@ -125,7 +125,6 @@ export class ImapClientService {
 
     this.imapClient.selectMailbox(path,{readOnly:true}).then((mailbox)=>{
       return this.cache.store("mailbox:"+path, mailbox);
-/*
     }).then(()=>{
       let p_imapmsgs = this.imapClient.listMessages(path,"1:*",['uid']);
       let p_cachemsgs = this.cache.query_ids_by_prefix("envelope:"+path+":");
@@ -154,7 +153,6 @@ export class ImapClientService {
       return this.cache.query_ids_by_prefix("envelope:"+path+":");
     }).then((messages)=>{
       // console.log("retrieved messages: " + JSON.stringify(messages,null,'\t'));
-*/
     });
   }
 

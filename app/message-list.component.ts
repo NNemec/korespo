@@ -60,4 +60,8 @@ export class MessageListComponent implements OnInit, OnDestroy {
     let selectedMessage = event.node
     console.log(selectedMessage._id)
   }
+
+  formatAddrList(addrList:{address:string,name:string}[]): string {
+    return addrList.map((address,name)=>`{$name} <{$address}>`).join(', ');
+  }
 }

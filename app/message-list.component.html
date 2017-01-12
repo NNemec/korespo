@@ -3,7 +3,8 @@
              [(selection)]="selectedMessages"
              (onNodeSelect)="onSelectMessages($event)"
              [style]="{width:'100%',height:'100%',overflow:'auto'}">
-    <p-column field="subject" header="Subject"></p-column>
-    <p-column field="sender" header="From"></p-column>
-    <p-column field="date" header="Date"></p-column>
+    <p-column field="envelope.subject" header="Subject"></p-column>
+    <p-column field="formatAddrList(envelope.from)" header="From"></p-column>
+    <p-column field="formatAddrList(envelope.to)" header="To"></p-column>
+    <p-column field="envelope.date" header="Date"></p-column>
 </p-dataTable>
