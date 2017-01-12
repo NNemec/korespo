@@ -44,9 +44,10 @@ export class ImapClientService {
   // PouchCache change notification do not run inside ngZone. Need this wrapper in between
   ngZoneWrap<T>(obs: Observable<T>): Observable<T> {
     return new Observable<T>((observer)=>{
-      obs.subscribe((val)=>{
+      let subscription = obs.subscribe((val)=>{
         this.ngZone.run(()=>observer.next(val));
       })
+      return ()=>subscription.unsubscribe();
     });
   }
 
@@ -58,8 +59,14 @@ export class ImapClientService {
     return this.ngZoneWrap(this.cache.observe("mailbox:"+path,{waitforcreation:true}));    
   }
 
-  observe_messages(path: string): any {
-    return this.ngZoneWrap(this.cache.liveFeed_by_id_prefix("envelope:"+path+":"));
+  observe_messages(path: string): Observable<any> {
+    return new Observable<any>((observer)=>{
+      let liveFeed = this.cache.liveFeed_by_id_prefix("envelope:"+path+":");
+      liveFeed.on("update",(update,aggregate)=>{
+        this.ngZone.run(()=>observer.next(aggregate));
+      })
+      return ()=>liveFeed.cancel();
+    })
   }
 
   isLoggedIn(): boolean {

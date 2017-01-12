@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, Input, SimpleChanges } from '@angular/core';
 
 import { DataTable } from 'primeng/primeng';
+import { Subscription } from 'rxjs/Rx';
 
 import { ImapClientService } from './imapclient.service';
 
@@ -12,7 +13,7 @@ import { ImapClientService } from './imapclient.service';
 export class MessageListComponent implements OnInit, OnDestroy {
   @Input() folderPath: string;
 
-  liveFeed: any;
+  subscription: Subscription;
   tableData: any[];
   
   selectedMessages: any[];
@@ -30,9 +31,9 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
   reset() {
-    if(this.liveFeed)
-      this.liveFeed.cancel();
-    this.liveFeed = undefined;
+    if(this.subscription)
+      this.subscription.unsubscribe();
+    this.subscription = undefined;
     this.tableData = [];
     this.selectedMessages = [];
   }
@@ -49,15 +50,9 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
     this.reset();
 
-    this.liveFeed = this.imapClientService.observe_messages(this.folderPath)
-    .on("ready",()=>{
-    })
-    .on("update",(update,aggregate)=>{
-      this.tableData = aggregate;
-    })
-    .on("cancelled",()=>{
-    })
-    .on("error",(err)=>{
+    this.subscription = this.imapClientService.observe_messages(this.folderPath)
+    .subscribe((messages)=>{
+      this.tableData = messages;
     });
   }
 

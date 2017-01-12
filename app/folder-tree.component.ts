@@ -1,5 +1,7 @@
 import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 
+import { Subscription } from 'rxjs/Rx';
+
 import { TreeNode } from 'primeng/primeng';
 
 import { ImapClientService } from './imapclient.service';
@@ -11,7 +13,7 @@ import { ImapClientService } from './imapclient.service';
 })
 export class FolderTreeComponent implements OnInit, OnDestroy {
   treeData: TreeNode[] = [];
-  subscription: any;
+  subscription: Subscription;
 
   selectedFolders: TreeNode[] = [];
 
