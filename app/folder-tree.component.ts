@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 
 import { TreeNode } from 'primeng/primeng';
 
@@ -14,6 +14,8 @@ export class FolderTreeComponent implements OnInit, OnDestroy {
   subscription: any;
 
   selectedFolders: TreeNode[] = [];
+
+  @Output() folderPathSelected = new EventEmitter<string>();
 
   constructor(
     private imapClientService: ImapClientService
@@ -36,7 +38,9 @@ export class FolderTreeComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  onSelectFolders(event) {
+  onSelectFolder(event) {
     let selectedFolder = event.node
+    console.log("Selected: " + selectedFolder.data.path)
+    this.folderPathSelected.emit(selectedFolder.data.path);
   }
 }

@@ -19,10 +19,10 @@
   <div fxFlex style="width:100%">
     <div fxLayout="row" fxLayoutAlign="center stretch" style="height:100%;width:100%">
       <div fxFlex="auto">
-        <folder-tree></folder-tree>
+        <folder-tree (folderPathSelected)="selectFolderPath($event)"></folder-tree>
       </div>
       <div fxFlex="auto">
-        <message-list></message-list>
+        <message-list [folderPath]="currentFolderPath"></message-list>
       </div>
     </div> 
   </div>

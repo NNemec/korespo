@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, SimpleChanges } from '@angular/core';
 
 import { DataTable } from 'primeng/primeng';
 
@@ -10,7 +10,8 @@ import { ImapClientService } from './imapclient.service';
   templateUrl: 'message-list.component.html'
 })
 export class MessageListComponent implements OnInit, OnDestroy {
-  selectedPath: string;
+  @Input() folderPath: string;
+
   liveFeed: any;
   tableData: any[];
   
@@ -32,18 +33,23 @@ export class MessageListComponent implements OnInit, OnDestroy {
     if(this.liveFeed)
       this.liveFeed.cancel();
     this.liveFeed = undefined;
-    this.selectedPath = undefined;
     this.tableData = [];
     this.selectedMessages = [];
   }
 
-  onSelectPath(path: string) {
-    if( path == this.selectedPath )
+  ngOnChanges(changes: SimpleChanges) : void {
+    if("folderPath" in changes) {
+      this.onFolderPathChanged();
+    }
+  }
+
+  onFolderPathChanged() {
+    if( !this.folderPath )
       return;
 
     this.reset();
 
-    this.liveFeed = this.imapClientService.observe_messages(path)
+    this.liveFeed = this.imapClientService.observe_messages(this.folderPath)
     .on("ready",()=>{
     })
     .on("update",(update,aggregate)=>{
@@ -57,5 +63,6 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
   onSelectMessages(event) {
     let selectedMessage = event.node
+    console.log(selectedMessage._id)
   }
 }

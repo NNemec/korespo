@@ -10,11 +10,17 @@ import { ImapClientService } from './imapclient.service';
 export class AppComponent {
   showSetup: boolean = false;
 
+  currentFolderPath: string;
+
   constructor(
     private imapClientService: ImapClientService,
   ) {}
 
   toggleSetup() {
     this.showSetup = !this.showSetup;
+  }
+
+  selectFolderPath(path:string) {
+    this.currentFolderPath = path;
   }
 }
