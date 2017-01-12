@@ -1,4 +1,4 @@
-<div fxLayout="column" style="height:100%">
+<div fxLayout="column" style="height:100%;width:100%">
   <div fxFlexFill>
     <div *ngIf="! imapClientService.isLoggedIn()">
       <p-dialog header="Setup" [(visible)]="showSetup">
@@ -16,13 +16,13 @@
       <button pButton (click)="imapClientService.updateAll()" icon="fa-refresh" label="refresh all"></button>
     </div>
   </div>
-  <div fxFlex>
-    <div fxLayout="row" style="height:100%">
-      <div fxFlexFill>
+  <div fxFlex style="width:100%">
+    <div fxLayout="row" fxLayoutAlign="center stretch" style="height:100%;width:100%">
+      <div fxFlex="auto">
         <folder-tree></folder-tree>
       </div>
-      <div fxFlex>
-        something
+      <div fxFlex="auto">
+        <message-list></message-list>
       </div>
     </div> 
   </div>
