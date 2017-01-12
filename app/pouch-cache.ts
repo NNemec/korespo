@@ -1,6 +1,6 @@
 import { Observable, BehaviorSubject } from 'rxjs/Rx';
 
-declare const NodePouchDB: any;
+declare const PouchDB: any;
 declare const ElectronRemote: any;
 declare const deepEqual: any;
 
@@ -20,7 +20,7 @@ export class PouchCache {
   }
 
   open(name: string): Promise<void> {
-    this.db = new NodePouchDB(ElectronRemote.app.getPath('userData') + "/" + name);
+    this.db = new PouchDB(ElectronRemote.app.getPath('userData') + "/" + name);
     return this.db.info().catch((err)=>{
       console.error("failed to open PouchDB: " + name);
       console.debug("PouchDB info: " + JSON.stringify(err));
@@ -103,5 +103,15 @@ export class PouchCache {
       startkey: prefix,
       endkey: prefix + '\uffff',
     });
-  };
+  }
+
+  liveFeed_by_id_prefix(prefix:string): any {
+    return this.db.liveFind({   
+      selector: { $and: [
+        { _id: { $gte: prefix } },
+        { _id: { $lte: prefix + '\uffff' } }
+      ]},
+      aggregate: true
+    });
+  }
 }

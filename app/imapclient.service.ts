@@ -50,12 +50,16 @@ export class ImapClientService {
     });
   }
 
-  mailboxes(): Observable<any> {
+  observe_mailboxes(): Observable<any> {
     return this.ngZoneWrap(this.cache.observe("mailboxes",{waitforcreation:true}));
   }
 
-  mailbox(path: string): Observable<any> {
+  observe_mailbox(path: string): Observable<any> {
     return this.ngZoneWrap(this.cache.observe("mailbox:"+path,{waitforcreation:true}));    
+  }
+
+  observe_messages(path: string): any {
+    return this.ngZoneWrap(this.cache.liveFeed_by_id_prefix("envelope:"+path+":"));
   }
 
   isLoggedIn(): boolean {

@@ -2,8 +2,11 @@
 // but it is the only way I could get it work...
 
 const ImapClient = require('emailjs-imap-client');
-const NodePouchDB = require('pouchdb');
 const deepEqual = require('deep-equal');
+
+const PouchDB = require('pouchdb');
+PouchDB.plugin(require('pouchdb-find'));
+PouchDB.plugin(require('pouchdb-live-find'));
 
 const ElectronRemote = require('electron').remote;
 

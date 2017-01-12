@@ -4,47 +4,58 @@ import { DataTable } from 'primeng/primeng';
 
 import { ImapClientService } from './imapclient.service';
 
-class Message {
-
-}
-
 @Component({
   moduleId: module.id,
   selector: 'message-list',
   templateUrl: 'message-list.component.html'
 })
 export class MessageListComponent implements OnInit, OnDestroy {
-  tableData: Message[] = [];
-//  subscription: any;
-
-  selectedMessages: Message[] = [];
+  selectedPath: string;
+  liveFeed: any;
+  tableData: any[];
+  
+  selectedMessages: any[];
 
   constructor(
     private imapClientService: ImapClientService
   ) {}
 
   ngOnInit() {
-/*
-    this.subscription = this.imapClientService.messages(path).subscribe((messages)=>{
-      let converter = (imapNode)=>{
-        let res: TreeNode = {data:imapNode}
-        if("children" in imapNode) {
-          res.children = imapNode.children.map(converter);
-        }
-        return res;
-      }
-      this.treeData = mailboxes.children.map(converter);
-    });
-*/
+    this.reset();
   }
 
   ngOnDestroy() {
-/*
-    this.subscription.unsubscribe();
-*/
+    this.reset();
   }
 
-  onSelectFolders(event) {
-    let selectedFolder = event.node
+  reset() {
+    if(this.liveFeed)
+      this.liveFeed.cancel();
+    this.liveFeed = undefined;
+    this.selectedPath = undefined;
+    this.tableData = [];
+    this.selectedMessages = [];
+  }
+
+  onSelectPath(path: string) {
+    if( path == this.selectedPath )
+      return;
+
+    this.reset();
+
+    this.liveFeed = this.imapClientService.observe_messages(path)
+    .on("ready",()=>{
+    })
+    .on("update",(update,aggregate)=>{
+      this.tableData = aggregate;
+    })
+    .on("cancelled",()=>{
+    })
+    .on("error",(err)=>{
+    });
+  }
+
+  onSelectMessages(event) {
+    let selectedMessage = event.node
   }
 }
