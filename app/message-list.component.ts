@@ -19,18 +19,11 @@ export class MessageListComponent implements OnInit, OnDestroy {
   selectedMessages: any[];
 
   cols = [
-    { header:"Subject", field:"subject" },
-    { header:"From",    field:"from",   },
-    { header:"To",      field:"to",     },
-    { header:"Date",    field:"date",   },
+    { header:"Subject", field:"subject", format: d=>d.envelope.subject },
+    { header:"From",    field:"from",    format: d=>this.formatAddrList(d.envelope.from) },
+    { header:"To",      field:"to",      format: d=>this.formatAddrList(d.envelope.to) },
+    { header:"Date",    field:"date",    format: d=>d.envelope.date },
   ];
-
-  format = {
-    subject: (d)=>{return d.envelope.subject},
-    from:    (d)=>{return this.formatAddrList(d.envelope.from)},
-    to:      (d)=>{return this.formatAddrList(d.envelope.to)},
-    date:    (d)=>{return d.envelope.date},
-  }
 
   columnOptions = this.cols.map((col)=>({label: col.header,value: col}));
 

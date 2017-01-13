@@ -16,16 +16,18 @@
         </div>
     </header>
 
-    <p-column *ngFor="let col of cols"
-              [header]="col.header"
-              [field]="col.field"  
+    
+
+    <p-column *ngFor="let c of cols"
+              [header]="c.header"
+              [field]="c.field"  
               [sortable]="true"
               [style]="{'text-overflow':'ellipsis'}">
         <template let-col pTemplate="header">
             <span class="ui-column-title">{{col.header}}</span>
         </template>
         <template let-col let-data="rowData" pTemplate="body">
-            <span class="ui-cell-data">{{format[col.field](data)}}</span>
+            <span class="ui-cell-data">{{c.format(data)}}</span>
         </template>
     </p-column>
 
