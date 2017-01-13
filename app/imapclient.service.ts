@@ -6,8 +6,6 @@ import { PouchCache } from './pouch-cache';
 
 declare const nodeRequire: (string)=>any;
 
-const ImapClient = nodeRequire('emailjs-imap-client');
-
 export class AccountData {
   host: string = "";
   port: number = 0;
@@ -77,6 +75,8 @@ export class ImapClientService {
 
   login(): Promise<any> {
     this.cache.store("account",this.accountData);
+
+    const ImapClient = nodeRequire('emailjs-imap-client');
 
     let client = new ImapClient(
       this.accountData.host,
