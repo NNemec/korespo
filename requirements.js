@@ -2,7 +2,6 @@
 // but it is the only way I could get it work...
 
 const ImapClient = require('emailjs-imap-client');
-const deepEqual = require('deep-equal');
 
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-find'));

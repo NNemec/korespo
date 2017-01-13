@@ -2,7 +2,8 @@ import { Observable, BehaviorSubject } from 'rxjs/Rx';
 
 declare const PouchDB: any;
 declare const ElectronRemote: any;
-declare const deepEqual: any;
+
+import deepEqual from 'deep-equal';
 
 interface Document {
   _id: string;
