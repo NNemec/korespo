@@ -13,3 +13,5 @@ const ElectronRemote = require('electron').remote;
 // for discussion, see https://github.com/pouchdb/pouchdb/issues/6123
 const EventEmitter = require('events');
 EventEmitter.defaultMaxListeners = 0;
+
+System.import('app').catch(function(err){ console.error(err); });
