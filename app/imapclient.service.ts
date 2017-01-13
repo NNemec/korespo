@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 
-import { Observable, Subject } from 'rxjs/Rx';
+import { Observable, Subject } from 'rxjs';
 
 import { PouchCache } from './pouch-cache';
 

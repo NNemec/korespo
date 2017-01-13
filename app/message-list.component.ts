@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, Input, SimpleChanges } from '@angular/core';
 
 import { DataTable } from 'primeng/primeng';
-import { Subscription } from 'rxjs/Rx';
+import { Subscription } from 'rxjs';
 
 import { ImapClientService } from './imapclient.service';
 
