@@ -19,11 +19,18 @@ export class MessageListComponent implements OnInit, OnDestroy {
   selectedMessages: any[];
 
   cols = [
-    { header:"Subject", field:"envelope.subject" },
-    { header:"From",    field:"formatAddrList(envelope.from)" },
-    { header:"To",      field:"formatAddrList(envelope.to)" },
-    { header:"Date",    field:"envelope.date" },
+    { header:"Subject", field:"subject" },
+    { header:"From",    field:"from",   },
+    { header:"To",      field:"to",     },
+    { header:"Date",    field:"date",   },
   ];
+
+  format = {
+    subject: (d)=>{return d.envelope.subject},
+    from:    (d)=>{return this.formatAddrList(d.envelope.from)},
+    to:      (d)=>{return this.formatAddrList(d.envelope.to)},
+    date:    (d)=>{return d.envelope.date},
+  }
 
   columnOptions = this.cols.map((col)=>({label: col.header,value: col}));
 
@@ -71,6 +78,6 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
   formatAddrList(addrList:{address:string,name:string}[]): string {
-    return addrList.map((address,name)=>`{$name} <{$address}>`).join(', ');
+    return addrList ? addrList.map(({address,name})=>`${name} <${address}>`).join(', ') : "";
   }
 }
