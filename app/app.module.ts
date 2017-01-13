@@ -7,6 +7,7 @@ import { ButtonModule }      from 'primeng/primeng';
 import { DataTableModule }   from 'primeng/primeng';
 import { DialogModule }      from 'primeng/primeng';
 import { InputTextModule }   from 'primeng/primeng';
+import { MultiSelectModule } from 'primeng/primeng';
 import { SharedModule }      from 'primeng/primeng';
 import { TreeModule }        from 'primeng/primeng';
 
@@ -26,6 +27,7 @@ import { ImapClientService } from './imapclient.service';
     DataTableModule,
     DialogModule,
     InputTextModule,
+    MultiSelectModule,
     SharedModule,
     TreeModule,
   ],

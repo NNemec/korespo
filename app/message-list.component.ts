@@ -18,6 +18,15 @@ export class MessageListComponent implements OnInit, OnDestroy {
   
   selectedMessages: any[];
 
+  cols = [
+    { header:"Subject", field:"envelope.subject" },
+    { header:"From",    field:"formatAddrList(envelope.from)" },
+    { header:"To",      field:"formatAddrList(envelope.to)" },
+    { header:"Date",    field:"envelope.date" },
+  ];
+
+  columnOptions = this.cols.map((col)=>({label: col.header,value: col}));
+
   constructor(
     private imapClientService: ImapClientService
   ) {}

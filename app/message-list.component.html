@@ -2,9 +2,23 @@
              selectionMode="multiple" 
              [(selection)]="selectedMessages"
              (onNodeSelect)="onSelectMessages($event)"
+
+             resizableColumns="true"
+             reorderableColumns="true"
+            
+             sortMode="multiple"
+
              [style]="{width:'100%',height:'100%',overflow:'auto'}">
-    <p-column field="envelope.subject" header="Subject"></p-column>
-    <p-column field="formatAddrList(envelope.from)" header="From"></p-column>
-    <p-column field="formatAddrList(envelope.to)" header="To"></p-column>
-    <p-column field="envelope.date" header="Date"></p-column>
+
+    <header>
+        <div style="text-align:left">
+            <p-multiSelect [options]="columnOptions" [(ngModel)]="cols"></p-multiSelect>
+        </div>
+    </header>
+
+    <p-column *ngFor="let col of cols"
+              [header]="col.header"
+              [field]="col.field"  
+              [sortable]="true"></p-column>
+
 </p-dataTable>
