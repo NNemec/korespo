@@ -15,13 +15,12 @@ export class AccountData {
 
 @Injectable()
 export class ImapClientService {
-  cache: PouchCache;
+  cache = new PouchCache();
   accountData = new AccountData;
   imapClient: any;
   onStatusChanged = new Subject<void>();
 
   constructor(private ngZone: NgZone) {
-    this.open();
   }
 
   isOpen(): boolean {
@@ -29,7 +28,7 @@ export class ImapClientService {
   }
 
   open(): void {
-    this.cache = new PouchCache("imapcache");
+    this.cache.open("imapcache");
 
     this.cache.retrieve("account").then((doc) => {
       this.accountData = doc;

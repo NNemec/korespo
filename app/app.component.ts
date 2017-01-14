@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 
 import { ImapClientService } from './imapclient.service';
 
@@ -7,7 +7,7 @@ import { ImapClientService } from './imapclient.service';
   selector: 'my-app',
   templateUrl: 'app.component.html'
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   showSetup: boolean = false;
 
   currentFolderPath: string;
@@ -15,6 +15,10 @@ export class AppComponent {
   constructor(
     private imapClientService: ImapClientService,
   ) {}
+
+  ngAfterViewInit() {
+    this.imapClientService.open();
+  }
 
   toggleSetup() {
     this.showSetup = !this.showSetup;

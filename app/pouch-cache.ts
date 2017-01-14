@@ -13,6 +13,7 @@ PouchDB.plugin(nodeRequire('pouchdb-live-find'));
 const ElectronRemote = nodeRequire('electron').remote;
 
 import deepEqual from 'deep-equal';
+const Deferred = nodeRequire('promise-defer');
 
 interface Document {
   _id: string;
@@ -21,22 +22,24 @@ interface Document {
 export class PouchCache {
   private db: any;
   private _isOpen = false;
-  private waitOpen: Promise<void>;
+  private deferOpen = Deferred();
+  private waitOpen = this.deferOpen.promise;
 
   isOpen(): boolean {
     return this._isOpen;
   }
 
-  constructor(name: string) {
+  open(name: string) {
     this.db = new PouchDB(ElectronRemote.app.getPath('userData') + "/" + name);
-    this.waitOpen = this.db.info().catch((err)=>{
+    this.db.info().catch((err)=>{
       console.error("failed to open PouchDB: " + name);
       console.debug("PouchDB info: " + JSON.stringify(err));
       this.db.close();
-      throw err;
+      this.deferOpen.reject(err);
     }).then((info)=>{
       console.info("successfully opened PouchDB: " + name);
       this._isOpen = true;
+      this.deferOpen.resolve();
     });
   }
 
