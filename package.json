@@ -45,7 +45,6 @@
     "reflect-metadata": "^0.1.8",
     "rxjs": "5.0.0-beta.12",
     "systemjs": "~0.19.41",
-    "worker-pouch": "2.0.0",
     "zone.js": "~0.6.26"
   },
   "devDependencies": {
