@@ -20,28 +20,27 @@ interface Document {
 }
 
 export class PouchCache {
-  db: any;
+  private db: any;
+  private _isOpen = false;
+  private waitOpen: Promise<void>;
 
   isOpen(): boolean {
-    return this.db;
+    return this._isOpen;
   }
 
   constructor(name: string) {
-    this.open(name);
-  }
-
-  open(name: string): Promise<void> {
     this.db = new PouchDB(ElectronRemote.app.getPath('userData') + "/" + name,
 //                          {adapter: 'worker'},
 // crash on Chromium 53: https://github.com/nolanlawson/worker-pouch/issues/15
                           );
-    return this.db.info().catch((err)=>{
+    this.waitOpen = this.db.info().catch((err)=>{
       console.error("failed to open PouchDB: " + name);
       console.debug("PouchDB info: " + JSON.stringify(err));
       this.db.close();
       throw err;
     }).then((info)=>{
       console.info("successfully opened PouchDB: " + name);
+      this._isOpen = true;
     });
   }
 
@@ -49,39 +48,49 @@ export class PouchCache {
     if(this.db) {
       this.db.close();
       this.db = undefined;
+      this._isOpen = false;
     }
   }
 
   retrieve(id: string): Promise<any> {
-    return this.db.get(id);
+    return this.waitOpen.then(()=>this.db.get(id));
   }
 
   observe(id: string, options?: {waitforcreation?: boolean}): Observable<Document> {
     return Observable.create((observer) => {
-      this.db.get(id).catch((err)=>{
-        if(options && options.waitforcreation && err.name == "not_found") {
-          // if it does not yet exist, observe anyway
-        } else
-          observer.error(err);
-      }).then((doc)=>{
-        observer.next(doc);
-      });
+      let liveFeed: any;
+      this.waitOpen
+      .then(()=>{
+        liveFeed = this.db.liveFind({
+          selector: { _id: id },
+          aggregate: true,
+        });
 
-      let eventemitter = this.db.changes({
-        doc_ids:[id],
-        since: 'now',
-        live: true,
-        include_docs:true,
-      }).on('change',(info)=>{
-        observer.next(info.doc);
-      }).on('complete',(info)=>{
-        observer.complete();
-      }).on('error',(err)=>{
-        observer.error(err);
+        liveFeed
+        .then((res)=>{
+          console.log("initial query of " + id + " successful: " + res);
+        },(err)=>{
+          console.error("initial query of " + id + " failed:")
+          observer.error(err);
+        });
+
+        liveFeed
+        .on("update",(update,aggregate)=>{
+          console.log("continuous query of " + id + " update: " + update);
+          observer.next(aggregate[0]);
+        })
+        .on("cancelled",()=>{
+          console.log("continuous query of " + id + " ended");
+          observer.complete();
+        })
+        .on("error",(err)=>{
+          console.error("continuous query of " + id + " failed");
+          observer.error(err);
+        });
       });
 
       // return unsubscribe handler
-      return ()=>{ eventemitter.cancel(); }
+      return ()=>{ if(liveFeed) liveFeed.cancel(); }
     });
   }
 
@@ -113,10 +122,10 @@ export class PouchCache {
   }
 
   query_ids_by_prefix(prefix:string): Promise<any> {
-    return this.db.allDocs({
+    return this.waitOpen.then(()=>this.db.allDocs({
       startkey: prefix,
       endkey: prefix + '\uffff',
-    });
+    }));
   }
 
   liveFeed_by_id_prefix(prefix:string): any {
