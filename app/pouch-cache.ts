@@ -9,6 +9,7 @@ nodeRequire('events').defaultMaxListeners = 0;
 const PouchDB = nodeRequire('pouchdb');
 PouchDB.plugin(nodeRequire('pouchdb-find'));
 PouchDB.plugin(nodeRequire('pouchdb-live-find'));
+PouchDB.adapter('worker', nodeRequire('worker-pouch'));
 
 const ElectronRemote = nodeRequire('electron').remote;
 
@@ -30,7 +31,10 @@ export class PouchCache {
   }
 
   open(name: string): Promise<void> {
-    this.db = new PouchDB(ElectronRemote.app.getPath('userData') + "/" + name);
+    this.db = new PouchDB(ElectronRemote.app.getPath('userData') + "/" + name,
+//                          {adapter: 'worker'},
+// crash on Chromium 53: https://github.com/nolanlawson/worker-pouch/issues/15
+                          );
     return this.db.info().catch((err)=>{
       console.error("failed to open PouchDB: " + name);
       console.debug("PouchDB info: " + JSON.stringify(err));
@@ -55,7 +59,7 @@ export class PouchCache {
   observe(id: string, options?: {waitforcreation?: boolean}): Observable<Document> {
     return Observable.create((observer) => {
       this.db.get(id).catch((err)=>{
-        if(options && options.waitforcreation && err.name == "not_found") {          
+        if(options && options.waitforcreation && err.name == "not_found") {
           // if it does not yet exist, observe anyway
         } else
           observer.error(err);
@@ -116,7 +120,7 @@ export class PouchCache {
   }
 
   liveFeed_by_id_prefix(prefix:string): any {
-    return this.db.liveFind({   
+    return this.db.liveFind({
       selector: { $and: [
         { _id: { $gte: prefix } },
         { _id: { $lte: prefix + '\uffff' } }
