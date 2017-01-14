@@ -3,7 +3,10 @@ import { Component, OnInit, OnDestroy, Input, SimpleChanges } from '@angular/cor
 import { DataTable } from 'primeng/primeng';
 import { Subscription } from 'rxjs';
 
+import * as moment from 'moment';
+
 import { ImapClientService } from './imapclient.service';
+
 
 @Component({
   moduleId: module.id,
@@ -22,10 +25,25 @@ export class MessageListComponent implements OnInit, OnDestroy {
     { header:"Subject", field:"subject", format: d=>d.envelope.subject },
     { header:"From",    field:"from",    format: d=>this.formatAddrList(d.envelope.from) },
     { header:"To",      field:"to",      format: d=>this.formatAddrList(d.envelope.to) },
-    { header:"Date",    field:"date",    format: d=>d.envelope.date },
+    { header:"Date",    field:"date",    format: d=>this.formatDate(d.envelope.date) },
   ];
 
   columnOptions = this.cols.map((col)=>({label: col.header,value: col}));
+
+  formatAddrList(addrList:{address:string,name:string}[]): string {
+    return addrList ? addrList.map(({address,name})=>`${name} <${address}>`).join(', ') : "";
+  }
+
+  formatDate(dateRFC2822:string): string {
+    return moment(dateRFC2822,"ddd, DD MMM YYYY HH:mm:ss ZZ").calendar(null, {
+      sameDay: '[Today] hh:mm',
+      nextDay: '[Tomorrow] hh:mm',
+      nextWeek: 'MMM D, YYYY',
+      lastDay: '[Yesterday] hh:mm',
+      lastWeek: 'MMM D, YYYY',
+      sameElse: 'MMM D, YYYY'
+    });
+  }
 
   constructor(
     private imapClientService: ImapClientService
@@ -70,7 +88,4 @@ export class MessageListComponent implements OnInit, OnDestroy {
     console.log(selectedMessage._id)
   }
 
-  formatAddrList(addrList:{address:string,name:string}[]): string {
-    return addrList ? addrList.map(({address,name})=>`${name} <${address}>`).join(', ') : "";
-  }
 }

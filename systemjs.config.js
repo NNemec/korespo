@@ -24,6 +24,7 @@
       '@angular/flex-layout' : '@angular/flex-layout/bundles/flex-layout.umd.js',
       // other libraries
       'angular-in-memory-web-api': 'angular-in-memory-web-api/bundles/in-memory-web-api.umd.js',
+      'moment': 'moment/moment.js',
     },
     // packages tells the System loader how to load when no filename and/or no extension
     packages: {
@@ -34,6 +35,9 @@
       'rxjs': {
         main: './Rx.js',
         defaultExtension: 'js',
+      },
+      'moment': {
+        defaultExtension: 'js',        
       },
       'primeng': {
         defaultExtension: 'js',

@@ -37,6 +37,7 @@
     "electron-reload": "~1.1.0",
     "emailjs-imap-client": "^2.0.3",
     "font-awesome": "^4.7.0",
+    "moment": "2.17.1",
     "pouchdb": "^6.1.0",
     "pouchdb-find": "^0.10.4",
     "pouchdb-live-find": "^0.3.0",
