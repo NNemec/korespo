@@ -52,41 +52,60 @@ export class PouchCache {
     return this.waitOpen.then(()=>this.db.get(id));
   }
 
-  observe(id: string, options?: {waitforcreation?: boolean}): Observable<Document> {
+  retrieve_by_prefix(prefix:string): Promise<any[]> {
+    let regex = prefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ".*";
+    return this.waitOpen.then(()=>this.db.find({
+      selector: { _id: { $regex: regex } },
+    }));
+  }
+
+  private _observe(request: any): Observable<Document[]> {
     return Observable.create((observer) => {
       let liveFeed: any;
       this.waitOpen
       .then(()=>{
-        liveFeed = this.db.liveFind({
-          selector: { _id: id },
-          aggregate: true,
-        });
+        liveFeed = this.db.liveFind(request);
 
         liveFeed
         .then((res)=>{
-          console.log("initial query of " + id + " successful: " + res);
+//          console.log("initial query of " + request + " successful: " + res);
         },(err)=>{
-          console.error("initial query of " + id + " failed:")
+          console.error("initial query of " + request + " failed:")
           observer.error(err);
         });
 
         liveFeed
         .on("update",(update,aggregate)=>{
-          console.log("continuous query of " + id + " update: " + update);
-          observer.next(aggregate[0]);
+//          console.log("continuous query of " + request + " update: " + update);
+          observer.next(aggregate);
         })
         .on("cancelled",()=>{
-          console.log("continuous query of " + id + " ended");
+//          console.log("continuous query of " + request + " ended");
           observer.complete();
         })
         .on("error",(err)=>{
-          console.error("continuous query of " + id + " failed");
+          console.error("continuous query of " + request + " failed");
           observer.error(err);
         });
       });
 
       // return unsubscribe handler
       return ()=>{ if(liveFeed) liveFeed.cancel(); }
+    });
+  }
+
+  observe(id: string): Observable<Document> {
+    return this._observe({
+      selector: { _id: id },
+      aggregate: true,
+    }).filter(v=>v.length==1).map(v=>v[0]);
+  }
+
+  observe_by_prefix(prefix:string): Observable<Document[]> {
+    let regex = prefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ".*";
+    return this._observe({
+      selector: { _id: { $regex: regex } },
+      aggregate: true
     });
   }
 
@@ -117,20 +136,7 @@ export class PouchCache {
     });
   }
 
-  query_ids_by_prefix(prefix:string): Promise<any> {
-    return this.waitOpen.then(()=>this.db.allDocs({
-      startkey: prefix,
-      endkey: prefix + '\uffff',
-    }));
-  }
-
-  liveFeed_by_id_prefix(prefix:string): any {
-    return this.db.liveFind({   
-      selector: { $and: [
-        { _id: { $gte: prefix } },
-        { _id: { $lte: prefix + '\uffff' } }
-      ]},
-      aggregate: true
-    });
+  store_bulk(newdocs: any[]): Promise<any> {
+    return this.db.bulkDocs(newdocs);
   }
 }

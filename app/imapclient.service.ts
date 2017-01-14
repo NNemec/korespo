@@ -52,21 +52,15 @@ export class ImapClientService {
   }
 
   observe_mailboxes(): Observable<any> {
-    return this.ngZoneWrap(this.cache.observe("mailboxes",{waitforcreation:true}));
+    return this.ngZoneWrap(this.cache.observe("mailboxes"));
   }
 
   observe_mailbox(path: string): Observable<any> {
-    return this.ngZoneWrap(this.cache.observe("mailbox:"+path,{waitforcreation:true}));    
+    return this.ngZoneWrap(this.cache.observe("mailbox:"+path));
   }
 
   observe_messages(path: string): Observable<any> {
-    return new Observable<any>((observer)=>{
-      let liveFeed = this.cache.liveFeed_by_id_prefix("envelope:"+path+":")
-      .on("update",(update,aggregate)=>{
-        this.ngZone.run(()=>observer.next(aggregate));
-      })
-      return ()=>liveFeed.cancel();
-    });//.throttleTime(50 /* ms */);
+    return this.ngZoneWrap(this.cache.observe_by_prefix("envelope:"+path+":"));
   }
 
   isLoggedIn(): boolean {
@@ -100,7 +94,7 @@ export class ImapClientService {
         console.error("imapClient error: " + err);
         this.logout();
       }
-      this.imapClient = client;      
+      this.imapClient = client;
       console.info("logged in");
     });
   }
@@ -108,7 +102,7 @@ export class ImapClientService {
   logout(): void {
     if(this.imapClient) {
       this.imapClient.close();
-      this.imapClient = undefined;    
+      this.imapClient = undefined;
     }
   }
 
@@ -129,7 +123,7 @@ export class ImapClientService {
       return this.cache.store("mailbox:"+path, mailbox);
     }).then(()=>{
       let p_imapmsgs = this.imapClient.listMessages(path,"1:*",['uid']);
-      let p_cachemsgs = this.cache.query_ids_by_prefix("envelope:"+path+":");
+      let p_cachemsgs = this.cache.retrieve_by_prefix("envelope:"+path+":");
       return Promise.all([p_imapmsgs,p_cachemsgs]);
     }).then(([imapmsgs,cachemsgs])=>{
       let imapuids = new Set(imapmsgs.map(({uid})=>uid));
@@ -150,9 +144,9 @@ export class ImapClientService {
 
       // console.log("storing messages: " + JSON.stringify(new_messages,null,'\t'));
 
-      return this.cache.db.bulkDocs(new_messages);
+      return this.cache.store_bulk(new_messages);
     }).then(()=>{
-      return this.cache.query_ids_by_prefix("envelope:"+path+":");
+      return this.cache.retrieve_by_prefix("envelope:"+path+":");
     }).then((messages)=>{
       // console.log("retrieved messages: " + JSON.stringify(messages,null,'\t'));
     });
