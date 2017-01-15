@@ -61,7 +61,7 @@ export class PouchCache {
         { _id: { $gte: prefix } },
         { _id: { $lte: prefix + '\uffff' } }
       ]},
-    }));
+    })).then((result:{docs:any[]})=>result.docs);
   }
 
   private _observe(request: any): Observable<Document[]> {

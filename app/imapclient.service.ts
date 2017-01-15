@@ -126,7 +126,7 @@ export class ImapClientService {
       return Promise.all([p_imapmsgs,p_cachemsgs]);
     }).then(([imapmsgs,cachemsgs])=>{
       let imapuids = new Set(imapmsgs.map(({uid})=>uid));
-      let cacheuids = new Set(cachemsgs.rows.map(({id})=>Number(id.split(':').pop())));
+      let cacheuids = new Set(cachemsgs.map(({_id})=>Number(_id.split(':').pop())));
       let to_delete = Array.from(cacheuids).filter(uid=>!imapuids.has(uid));
       let to_create = Array.from(imapuids).filter(uid=>!cacheuids.has(uid));
 
