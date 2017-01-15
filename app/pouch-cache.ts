@@ -70,6 +70,8 @@ export class PouchCache {
       this.waitOpen
       .then(()=>{
         liveFeed = this.db.liveFind(request);
+        let non_ready_aggregate = []
+        let ready: false
 
         liveFeed
         .then((res)=>{
@@ -82,7 +84,14 @@ export class PouchCache {
         liveFeed
         .on("update",(update,aggregate)=>{
 //          console.log("continuous query of " + request + " update: " + update);
-          observer.next(aggregate);
+          if(non_ready_aggregate)
+            non_ready_aggregate = aggregate
+          else
+            observer.next(aggregate);
+        })
+        .on("ready",()=>{
+          observer.next(non_ready_aggregate);
+          non_ready_aggregate = undefined
         })
         .on("cancelled",()=>{
 //          console.log("continuous query of " + request + " ended");
