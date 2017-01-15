@@ -30,7 +30,8 @@ export class MessageListInternalComponent {
   columnOptions = this.cols.map((col)=>({label: col.header,value: col}));
 
   formatAddrList(addrList:{address:string,name:string}[]): string {
-    return addrList ? addrList.map(({address,name})=>`${name} <${address}>`).join(', ') : "";
+//    return addrList ? addrList.map(({address,name})=>`${name} <${address}>`).join(', ') : "";
+    return addrList ? addrList.map(({address,name})=>name).join(', ') : "";
   }
 
   formatDate(dateRFC2822:string): string {

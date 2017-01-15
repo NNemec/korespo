@@ -21,12 +21,12 @@
               [field]="c.field"
               [sortable]="true"
               [style]="{'text-overflow':'ellipsis'}">
-        <!--template let-col pTemplate="header">
-            <span class="ui-column-title">{{col.header}}</span>
+        <template let-col pTemplate="header">
+            <span class="ui-column-title">{{ c.header }}</span>
         </template>
         <template let-col let-data="rowData" pTemplate="body">
-            <span class="ui-cell-data">{{data.envelope[c.field]}}</span>
-        </template-->
+            <span class="ui-cell-data">{{ c.format(data) }}</span>
+        </template>
     </p-column>
 
 </p-dataTable>
