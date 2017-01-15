@@ -13,8 +13,10 @@ import { TreeModule }        from 'primeng/primeng';
 
 import { AppComponent }      from './app.component';
 import { FolderTreeComponent }  from './folder-tree.component';
-import { MessageListComponent,
-         MessageListInternalComponent }  from './message-list.component';
+import { AddressesViewComponent,
+         DateViewComponent,
+         MessageListInternalComponent,
+         MessageListComponent }  from './message-list.component';
 
 import { ImapClientService } from './imapclient.service';
 
@@ -35,8 +37,10 @@ import { ImapClientService } from './imapclient.service';
   declarations: [
     AppComponent,
     FolderTreeComponent,
-    MessageListComponent,
+    AddressesViewComponent,
+    DateViewComponent,
     MessageListInternalComponent,
+    MessageListComponent,
   ],
   providers:    [
     ImapClientService,

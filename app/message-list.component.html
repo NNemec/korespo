@@ -18,19 +18,19 @@
 
     <p-column header="Subject" field="envelope.subject" sortable="true" [style]="{'text-overflow':'ellipsis'}">
     </p-column>
-    <p-column header="From" field="envelope.subject" sortable="true" [style]="{'text-overflow':'ellipsis'}">
+    <p-column header="From" field="envelope.from" sortable="true" [style]="{'text-overflow':'ellipsis'}">
         <template let-col let-data="rowData" pTemplate="body">
-            <span class="ui-cell-data">{{ formatAddrList(data.envelope.from) }}</span>
+            <addresses-view [addresses]="data.envelope.from"></addresses-view>
         </template>
     </p-column>
     <p-column header="To" field="envelope.to" sortable="true" [style]="{'text-overflow':'ellipsis'}">
         <template let-col let-data="rowData" pTemplate="body">
-            <span class="ui-cell-data">{{ formatAddrList(data.envelope.to) }}</span>
+            <addresses-view [addresses]="data.envelope.to"></addresses-view>
         </template>
     </p-column>
     <p-column header="Subject" field="envelope.subject" sortable="true" [style]="{'text-overflow':'ellipsis'}">
         <template let-col let-data="rowData" pTemplate="body">
-            <span class="ui-cell-data">{{ formatDate(data.envelope.date) }}</span>
+            <date-view [rfc2822]="data.envelope.to"></date-view>
         </template>
     </p-column>
 
