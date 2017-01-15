@@ -1,10 +1,31 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component,
+         OnInit, OnDestroy,
+         Input, Output,
+         EventEmitter } from '@angular/core';
 
 import { Subscription } from 'rxjs';
 
 import { TreeNode } from 'primeng/primeng';
 
 import { ImapClientService } from './imapclient.service';
+
+@Component({
+  moduleId: module.id,
+  selector: 'folder-item',
+  template: `
+    {{ imapNode.name }}
+    <button pButton (click)="imapClientService.updateMailbox(imapNode.path)"
+            [disabled]="!imapClientService.isLoggedIn()"
+            icon="fa-refresh" ></button>
+  `
+})
+export class FolderItemComponent {
+  @Input() imapNode: any
+
+  constructor(
+    private imapClientService: ImapClientService
+  ) {}
+}
 
 @Component({
   moduleId: module.id,

@@ -1,12 +1,9 @@
 <p-tree [value]="treeData"
-             selectionMode="multiple" 
+             selectionMode="multiple"
              [(selection)]="selectedFolders"
              (onNodeSelect)="onSelectFolder($event)"
              [style]="{width:'100%',height:'100%',overflow:'auto'}">
     <template let-node pTemplate="default">
-        {{ node.data.name }}
-        <button pButton (click)="imapClientService.updateMailbox(node.data.path)"
-                [disabled]="!imapClientService.isLoggedIn()"
-                icon="fa-refresh" ></button>
+        <folder-item [imapNode]='node.data'></folder-item>
     </template>
 </p-tree>

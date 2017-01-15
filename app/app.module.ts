@@ -12,7 +12,8 @@ import { SharedModule }      from 'primeng/primeng';
 import { TreeModule }        from 'primeng/primeng';
 
 import { AppComponent }      from './app.component';
-import { FolderTreeComponent }  from './folder-tree.component';
+import { FolderItemComponent,
+         FolderTreeComponent }  from './folder-tree.component';
 import { AddressesViewComponent,
          DateViewComponent,
          MessageListInternalComponent,
@@ -36,7 +37,10 @@ import { ImapClientService } from './imapclient.service';
   ],
   declarations: [
     AppComponent,
+
+    FolderItemComponent,
     FolderTreeComponent,
+
     AddressesViewComponent,
     DateViewComponent,
     MessageListInternalComponent,
