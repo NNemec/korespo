@@ -13,11 +13,14 @@ import { ImapClientService } from './imapclient.service';
   moduleId: module.id,
   selector: 'folder-item',
   template: `
-    {{ imapNode.name }}
+    <span style="float:left">{{ imapNode.name }} ???</span>
+    <span style="float:right">
     <button pButton (click)="imapClientService.updateMailbox(imapNode.path)"
             [disabled]="!imapClientService.isLoggedIn()"
-            icon="fa-refresh" ></button>
-  `
+            icon="fa-refresh"
+            style="font-size:0.6em"></button>
+    </span>
+  `,
 })
 export class FolderItemComponent {
   @Input() imapNode: any
@@ -30,7 +33,18 @@ export class FolderItemComponent {
 @Component({
   moduleId: module.id,
   selector: 'folder-tree',
-  templateUrl: 'folder-tree.component.html'
+  templateUrl: 'folder-tree.component.html',
+  styles: [`
+    * >>> .ui-treenode-content {
+      display: flex;
+    }
+    * >>> .ui-treenode-leaf-icon {
+      flex: none;
+    }
+    * >>> .ui-treenode-label {
+      flex: auto;
+    }
+  `]
 })
 export class FolderTreeComponent implements OnInit, OnDestroy {
   treeData: TreeNode[] = [];
