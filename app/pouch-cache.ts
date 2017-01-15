@@ -56,9 +56,11 @@ export class PouchCache {
   }
 
   retrieve_by_prefix(prefix:string): Promise<any[]> {
-    let regex = prefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ".*";
     return this.waitOpen.then(()=>this.db.find({
-      selector: { _id: { $regex: regex } },
+      selector: { $and: [
+        { _id: { $gte: prefix } },
+        { _id: { $lte: prefix + '\uffff' } }
+      ]},
     }));
   }
 
@@ -105,9 +107,11 @@ export class PouchCache {
   }
 
   observe_by_prefix(prefix:string): Observable<Document[]> {
-    let regex = prefix.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ".*";
     return this._observe({
-      selector: { _id: { $regex: regex } },
+      selector: { $and: [
+        { _id: { $gte: prefix } },
+        { _id: { $lte: prefix + '\uffff' } }
+      ]},
       aggregate: true
     });
   }
