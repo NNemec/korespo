@@ -20,15 +20,6 @@ export class MessageListInternalComponent {
 
   selectedMessages: any[];
 
-  cols = [
-    { header:"Subject", field:"envelope.subject", format: d=>d.envelope.subject },
-    { header:"From",    field:"envelope.from",    format: d=>this.formatAddrList(d.envelope.from) },
-    { header:"To",      field:"envelope.to",      format: d=>this.formatAddrList(d.envelope.to) },
-    { header:"Date",    field:"envelope.date",    format: d=>this.formatDate(d.envelope.date) },
-  ];
-
-  columnOptions = this.cols.map((col)=>({label: col.header,value: col}));
-
   formatAddrList(addrList:{address:string,name:string}[]): string {
 //    return addrList ? addrList.map(({address,name})=>`${name} <${address}>`).join(', ') : "";
     return addrList ? addrList.map(({address,name})=>name).join(', ') : "";
