@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, Input, SimpleChanges } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, SimpleChanges,
+         ChangeDetectionStrategy } from '@angular/core';
 
 import { DataTable } from 'primeng/primeng';
 import { Subscription } from 'rxjs';
@@ -10,22 +11,20 @@ import { ImapClientService } from './imapclient.service';
 
 @Component({
   moduleId: module.id,
-  selector: 'message-list',
-  templateUrl: 'message-list.component.html'
+  selector: 'message-list-internal',
+  templateUrl: 'message-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MessageListComponent implements OnInit, OnDestroy {
-  @Input() folderPath: string;
+export class MessageListInternalComponent {
+  @Input() tableData: any[];
 
-  subscription: Subscription;
-  tableData: any[];
-  
   selectedMessages: any[];
 
   cols = [
-    { header:"Subject", field:"subject", format: d=>d.envelope.subject },
-    { header:"From",    field:"from",    format: d=>this.formatAddrList(d.envelope.from) },
-    { header:"To",      field:"to",      format: d=>this.formatAddrList(d.envelope.to) },
-    { header:"Date",    field:"date",    format: d=>this.formatDate(d.envelope.date) },
+    { header:"Subject", field:"envelope.subject", format: d=>d.envelope.subject },
+    { header:"From",    field:"envelope.from",    format: d=>this.formatAddrList(d.envelope.from) },
+    { header:"To",      field:"envelope.to",      format: d=>this.formatAddrList(d.envelope.to) },
+    { header:"Date",    field:"envelope.date",    format: d=>this.formatDate(d.envelope.date) },
   ];
 
   columnOptions = this.cols.map((col)=>({label: col.header,value: col}));
@@ -45,6 +44,23 @@ export class MessageListComponent implements OnInit, OnDestroy {
     });
   }
 
+  onSelectMessages(event) {
+    let selectedMessage = event.node
+    console.log(selectedMessage._id)
+  }
+}
+
+@Component({
+  moduleId: module.id,
+  selector: 'message-list',
+  template: '<message-list-internal [tableData]="tableData"></message-list-internal>'
+})
+export class MessageListComponent implements OnInit, OnDestroy {
+  @Input() folderPath: string;
+
+  subscription: Subscription;
+  tableData: any[];
+
   constructor(
     private imapClientService: ImapClientService
   ) {}
@@ -62,7 +78,6 @@ export class MessageListComponent implements OnInit, OnDestroy {
       this.subscription.unsubscribe();
     this.subscription = undefined;
     this.tableData = [];
-    this.selectedMessages = [];
   }
 
   ngOnChanges(changes: SimpleChanges) : void {
@@ -82,10 +97,4 @@ export class MessageListComponent implements OnInit, OnDestroy {
       this.tableData = messages;
     });
   }
-
-  onSelectMessages(event) {
-    let selectedMessage = event.node
-    console.log(selectedMessage._id)
-  }
-
 }

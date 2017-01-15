@@ -1,11 +1,11 @@
 <p-dataTable [value]="tableData"
-             selectionMode="multiple" 
+             selectionMode="multiple"
              [(selection)]="selectedMessages"
              (onNodeSelect)="onSelectMessages($event)"
 
              resizableColumns="true"
              reorderableColumns="true"
-            
+
              sortMode="multiple"
 
              [style]="{width:'100%',height:'100%',overflow:'auto','font-size':'0.8em'}">
@@ -18,15 +18,15 @@
 
     <p-column *ngFor="let c of cols"
               [header]="c.header"
-              [field]="c.field"  
+              [field]="c.field"
               [sortable]="true"
               [style]="{'text-overflow':'ellipsis'}">
-        <template let-col pTemplate="header">
+        <!--template let-col pTemplate="header">
             <span class="ui-column-title">{{col.header}}</span>
         </template>
         <template let-col let-data="rowData" pTemplate="body">
-            <span class="ui-cell-data">{{c.format(data)}}</span>
-        </template>
+            <span class="ui-cell-data">{{data.envelope[c.field]}}</span>
+        </template-->
     </p-column>
 
 </p-dataTable>
