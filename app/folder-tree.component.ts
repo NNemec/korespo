@@ -1,5 +1,6 @@
 import { Component,
-         OnInit, OnDestroy,
+         OnInit, OnDestroy, OnChanges,
+         SimpleChanges,
          Input, Output,
          EventEmitter } from '@angular/core';
 
@@ -13,7 +14,7 @@ import { ImapClientService } from './imapclient.service';
   moduleId: module.id,
   selector: 'folder-item',
   template: `
-    <span style="float:left">{{ imapNode.name }} ???</span>
+    <span style="float:left" [pTooltip]="imapNode | json">{{ prefix }}{{ imapNode.name }} ???</span>
     <span style="float:right">
     <button pButton (click)="imapClientService.updateMailbox(imapNode.path)"
             [disabled]="!imapClientService.isLoggedIn()"
@@ -22,12 +23,45 @@ import { ImapClientService } from './imapclient.service';
     </span>
   `,
 })
-export class FolderItemComponent {
+export class FolderItemComponent implements OnChanges {
   @Input() imapNode: any
+
+  prefix = ""
 
   constructor(
     private imapClientService: ImapClientService
   ) {}
+
+  ngOnChanges(changes: SimpleChanges) {
+    if("imapNode" in changes) {
+      this.prefix = ""
+
+      let flags = this.imapNode.flags
+      if(this.imapNode.specialUse)
+        flags = flags.concat(this.imapNode.specialUse)
+      flags = new Set(flags)
+
+      flags.forEach((f)=>{
+        switch(f) {
+          case "\\HasNoChildren": break;
+          case "\\HasChildren":   break;
+          case "\\NoInferiors":   break;
+          case "\\All":           this.prefix += "🌍 "; break;
+          case "\\NoSelect":      this.prefix += "🚫 "; break;
+          case "\\Trash":         this.prefix += "🗑 "; break;
+
+          case "\\Archive":       this.prefix += "📦 "; break;
+          case "\\Drafts":        this.prefix += "📝 "; break;
+          case "\\Sent":          this.prefix += "💨 "; break;
+          case "\\Junk":          this.prefix += "💩 "; break;
+
+          default: this.prefix += f + " ";
+        }
+      });
+      if(this.prefix == "")
+        this.prefix = "📁 "
+    }
+  }
 }
 
 @Component({

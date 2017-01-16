@@ -9,6 +9,7 @@ import { DialogModule }      from 'primeng/primeng';
 import { InputTextModule }   from 'primeng/primeng';
 import { MultiSelectModule } from 'primeng/primeng';
 import { SharedModule }      from 'primeng/primeng';
+import { TooltipModule }     from 'primeng/primeng';
 import { TreeModule }        from 'primeng/primeng';
 
 import { AppComponent }      from './app.component';
@@ -33,6 +34,7 @@ import { ImapClientService } from './imapclient.service';
     InputTextModule,
     MultiSelectModule,
     SharedModule,
+    TooltipModule,
     TreeModule,
   ],
   declarations: [
