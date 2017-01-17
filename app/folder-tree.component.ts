@@ -14,7 +14,7 @@ import { ImapClientService } from './imapclient.service';
   moduleId: module.id,
   selector: 'folder-item',
   template: `
-    <span style="float:left" [pTooltip]="imapNode | json">{{ prefix }}{{ imapNode.name }} ???</span>
+    <span style="float:left" [pTooltip]="mailbox | json">{{ prefix }}{{ imapNode.name }} {{ mailbox?.exists }}</span>
     <span style="float:right">
     <button pButton (click)="imapClientService.updateMailbox(imapNode.path)"
             [disabled]="!imapClientService.isLoggedIn()"
@@ -23,8 +23,11 @@ import { ImapClientService } from './imapclient.service';
     </span>
   `,
 })
-export class FolderItemComponent implements OnChanges {
+export class FolderItemComponent implements OnInit, OnDestroy, OnChanges {
   @Input() imapNode: any
+
+  subscription: Subscription;
+  mailbox: any
 
   prefix = ""
 
@@ -32,8 +35,23 @@ export class FolderItemComponent implements OnChanges {
     private imapClientService: ImapClientService
   ) {}
 
+  ngOnInit() {
+    this.subscription = this.imapClientService.observe_mailbox(this.imapNode.path).subscribe((mailbox)=>{
+      this.mailbox = mailbox;
+    });
+  }
+
+  ngOnDestroy() {
+    if(this.subscription)
+      this.subscription.unsubscribe();
+    this.subscription = undefined
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     if("imapNode" in changes) {
+      this.ngOnDestroy()
+      this.ngOnInit()
+
       this.prefix = ""
 
       let flags = this.imapNode.flags
