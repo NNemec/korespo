@@ -23,10 +23,14 @@ export class PouchCache {
   private db: any;
   private _isOpen = false;
   private deferOpen = Deferred();
-  private waitOpen = this.deferOpen.promise;
+  private _waitOpen = this.deferOpen.promise;
 
   isOpen(): boolean {
     return this._isOpen;
+  }
+
+  waitOpen(): Promise<void> {
+    return this._waitOpen;
   }
 
   open(name: string) {
@@ -52,11 +56,11 @@ export class PouchCache {
   }
 
   retrieve(id: string): Promise<any> {
-    return this.waitOpen.then(()=>this.db.get(id));
+    return this.waitOpen().then(()=>this.db.get(id));
   }
 
   retrieve_by_prefix(prefix:string): Promise<any[]> {
-    return this.waitOpen.then(()=>this.db.find({
+    return this.waitOpen().then(()=>this.db.find({
       selector: { $and: [
         { _id: { $gte: prefix } },
         { _id: { $lte: prefix + '\uffff' } }
@@ -67,7 +71,7 @@ export class PouchCache {
   private _observe(request: any): Observable<Document[]> {
     return Observable.create((observer) => {
       let liveFeed: any;
-      this.waitOpen
+      this.waitOpen()
       .then(()=>{
         liveFeed = this.db.liveFind(request);
         let non_ready_aggregate = []
