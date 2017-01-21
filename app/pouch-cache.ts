@@ -13,7 +13,7 @@ PouchDB.plugin(nodeRequire('pouchdb-live-find'));
 const ElectronRemote = nodeRequire('electron').remote;
 
 import deepEqual from 'deep-equal';
-const Deferred = nodeRequire('promise-defer');
+import * as Deferred from 'promise-defer';
 
 interface Document {
   _id: string;

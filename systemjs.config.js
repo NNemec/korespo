@@ -25,6 +25,7 @@
       // other libraries
       'angular-in-memory-web-api': 'angular-in-memory-web-api/bundles/in-memory-web-api.umd.js',
       'moment': 'moment/moment.js',
+      'deep-equal': 'deep-equal/index.js',
       'promise-defer': 'promise-defer/index.js',
     },
     // packages tells the System loader how to load when no filename and/or no extension
@@ -43,9 +44,6 @@
       'primeng': {
         defaultExtension: 'js',
       },
-      'deep-equal': {
-        main: './index.js',
-      }
     }
   });
 })(this);
