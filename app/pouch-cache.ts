@@ -1,16 +1,14 @@
 import { Observable, BehaviorSubject } from 'rxjs';
 
-declare const nodeRequire: (string)=>any;
-
 // workaround: suppress warning for too many listeners on inaccessible levelChanges EventEmitter
 // for discussion, see https://github.com/pouchdb/pouchdb/issues/6123
-nodeRequire('events').defaultMaxListeners = 0;
+require('events').defaultMaxListeners = 0;
 
-const PouchDB = nodeRequire('pouchdb');
-PouchDB.plugin(nodeRequire('pouchdb-find'));
-PouchDB.plugin(nodeRequire('pouchdb-live-find'));
+const PouchDB = require('pouchdb');
+PouchDB.plugin(require('pouchdb-find'));
+PouchDB.plugin(require('pouchdb-live-find'));
 
-const ElectronRemote = nodeRequire('electron').remote;
+const ElectronRemote = require('electron').remote;
 
 import deepEqual from 'deep-equal';
 
