@@ -5,3 +5,6 @@ typings
 
 app/**/*.js
 app/**/*.js.map
+
+lib/**/*.js
+lib/**/*.js.map
