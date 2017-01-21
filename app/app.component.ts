@@ -17,7 +17,6 @@ export class AppComponent implements AfterViewInit {
   ) {}
 
   ngAfterViewInit() {
-    this.imapClientService.open();
   }
 
   toggleSetup() {

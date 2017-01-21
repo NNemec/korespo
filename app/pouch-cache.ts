@@ -13,7 +13,6 @@ PouchDB.plugin(nodeRequire('pouchdb-live-find'));
 const ElectronRemote = nodeRequire('electron').remote;
 
 import deepEqual from 'deep-equal';
-import * as Deferred from 'promise-defer';
 
 interface Document {
   _id: string;
@@ -22,28 +21,20 @@ interface Document {
 export class PouchCache {
   private db: any;
   private _isOpen = false;
-  private deferOpen = Deferred();
-  private _waitOpen = this.deferOpen.promise;
 
   isOpen(): boolean {
     return this._isOpen;
   }
 
-  waitOpen(): Promise<void> {
-    return this._waitOpen;
-  }
-
-  open(name: string) {
+  constructor(name: string) {
     this.db = new PouchDB(ElectronRemote.app.getPath('userData') + "/" + name);
     this.db.info().catch((err)=>{
       console.error("failed to open PouchDB: " + name);
       console.debug("PouchDB info: " + JSON.stringify(err));
       this.db.close();
-      this.deferOpen.reject(err);
     }).then((info)=>{
       console.info("successfully opened PouchDB: " + name);
       this._isOpen = true;
-      this.deferOpen.resolve();
     });
   }
 
@@ -56,55 +47,51 @@ export class PouchCache {
   }
 
   retrieve(id: string): Promise<any> {
-    return this.waitOpen().then(()=>this.db.get(id));
+    return this.db.get(id);
   }
 
   retrieve_by_prefix(prefix:string): Promise<any[]> {
-    return this.waitOpen().then(()=>this.db.find({
+    return this.db.find({
       selector: { $and: [
         { _id: { $gte: prefix } },
         { _id: { $lte: prefix + '\uffff' } }
       ]},
-    })).then((result:{docs:any[]})=>result.docs);
+    }).then((result:{docs:any[]})=>result.docs);
   }
 
   private _observe(request: any): Observable<Document[]> {
     return Observable.create((observer) => {
-      let liveFeed: any;
-      this.waitOpen()
-      .then(()=>{
-        liveFeed = this.db.liveFind(request);
-        let non_ready_aggregate = []
-        let ready: false
+      let liveFeed = this.db.liveFind(request);
+      let non_ready_aggregate = []
+      let ready: false
 
-        liveFeed
-        .then((res)=>{
+      liveFeed
+      .then((res)=>{
 //          console.log("initial query of " + request + " successful: " + res);
-        },(err)=>{
-          console.error("initial query of " + request + " failed:")
-          observer.error(err);
-        });
+      },(err)=>{
+        console.error("initial query of " + request + " failed:")
+        observer.error(err);
+      });
 
-        liveFeed
-        .on("update",(update,aggregate)=>{
+      liveFeed
+      .on("update",(update,aggregate)=>{
 //          console.log("continuous query of " + request + " update: " + update);
-          if(non_ready_aggregate)
-            non_ready_aggregate = aggregate
-          else
-            observer.next(aggregate);
-        })
-        .on("ready",()=>{
-          observer.next(non_ready_aggregate);
-          non_ready_aggregate = undefined
-        })
-        .on("cancelled",()=>{
+        if(non_ready_aggregate)
+          non_ready_aggregate = aggregate
+        else
+          observer.next(aggregate);
+      })
+      .on("ready",()=>{
+        observer.next(non_ready_aggregate);
+        non_ready_aggregate = undefined
+      })
+      .on("cancelled",()=>{
 //          console.log("continuous query of " + request + " ended");
-          observer.complete();
-        })
-        .on("error",(err)=>{
-          console.error("continuous query of " + request + " failed");
-          observer.error(err);
-        });
+        observer.complete();
+      })
+      .on("error",(err)=>{
+        console.error("continuous query of " + request + " failed");
+        observer.error(err);
       });
 
       // return unsubscribe handler
