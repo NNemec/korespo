@@ -6,6 +6,7 @@
   "scripts": {
     "postinstall": "electron-rebuild",
     "start": "tsc && concurrently -k --success first \"npm run tsc:w\" \"electron .\"",
+    "test": "tsc && jasmine",
     "tsc": "tsc",
     "tsc:w": "tsc -w"
   },
@@ -51,6 +52,8 @@
     "concurrently": "^3.1.0",
     "electron": "^1.4.14",
     "electron-rebuild": "^1.5.6",
+    "jasmine-core": "^2.5.2",
+    "jasmine-promises": "^0.4.1",
     "typescript": "^2.1.5"
   }
 }

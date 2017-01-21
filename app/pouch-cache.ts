@@ -25,7 +25,8 @@ export class PouchCache {
   }
 
   constructor(name: string) {
-    this.db = new PouchDB(ElectronRemote.app.getPath('userData') + "/" + name);
+    let path = ElectronRemote ? ElectronRemote.app.getPath('userData') : '.';
+    this.db = new PouchDB(path + "/" + name);
     this.db.info().catch((err)=>{
       console.error("failed to open PouchDB: " + name);
       console.debug("PouchDB info: " + JSON.stringify(err));
