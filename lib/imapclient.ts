@@ -85,12 +85,12 @@ export class ImapClient {
     this.db = new PouchDB(path);
 
     this.db.info().catch((err)=>{
-      console.error("failed to open PouchDB: " + name);
+      console.error("failed to open PouchDB: " + path);
       console.error(err);
       this.db.close();
       this.db = undefined
     }).then((info)=>{
-      console.info("successfully opened PouchDB: " + name);
+      console.info("successfully opened PouchDB: " + path);
       console.info(info);
       this._isOpen = true;
     });
