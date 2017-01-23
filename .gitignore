@@ -6,5 +6,10 @@ typings
 app/**/*.js
 app/**/*.js.map
 
+debug/**/*.js
+debug/**/*.js.map
+
 lib/**/*.js
 lib/**/*.js.map
+
+debugdb

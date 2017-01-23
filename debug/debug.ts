@@ -1,6 +1,6 @@
 console.log("something")
 
-import { ImapClient } from './lib/imapclient';
+import { ImapClient } from '../lib/imapclient';
 
 let imapClient = new ImapClient('debugdb');
 
