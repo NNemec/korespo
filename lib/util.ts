@@ -7,7 +7,7 @@ PouchDB.plugin(require('pouchdb-live-find'));
 // for discussion, see https://github.com/pouchdb/pouchdb/issues/6123
 require('events').defaultMaxListeners = 0;
 
-import deepEqual from 'deep-equal';
+import * as deepEqual from 'deep-equal';
 
 export function pouchdb_observe(db: any, request: any): Observable<any[]> {
   return Observable.create((observer) => {
@@ -66,8 +66,11 @@ export function pouchdb_store(db: any, id: string, newdoc: any): Promise<any> {
       store = true;
     }
   }).catch((err)=>{
-    console.info("no previous data found.");
-    store = true;
+    if(err.status && err.status === 404) {
+      console.info("no previous data found.");
+      store = true;
+    } else
+      throw err;
   }).then(()=>{
     if(store) {
       console.info("storing new data: " + id); // + JSON.stringify(newdoc));
