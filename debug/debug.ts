@@ -3,40 +3,44 @@ PouchDB.debug.enable('pouchdb:find')
 
 import { ImapClient } from '../lib/imapclient';
 
+import * as assert from 'assert';
+import { pouchdb_store } from '../lib/util';
+
 let imapClient = new ImapClient('debugdb');
 let db = imapClient.dbAccess()
 
 Promise.resolve().then(()=>{
     return Promise.resolve().then(()=>{
-        return db.getIndexes()
-    }).then((idxs)=>{
-        for(let idx of idxs.indexes) {
-            if(idx.name != '_all_docs') {
-                console.log("deleting index:" + idx.name)
-                db.deleteIndex(idx)
-            }
-        }
+        return db.getIndexes().then((idxs)=>{
+            return Promise.all(
+                idxs.indexes
+                .filter(idx => idx.name != '_all_docs')
+                .map(idx => {
+                    console.log("deleting index:" + idx.name)
+                    return db.deleteIndex(idx)
+                })
+            );
+        });
     }).then(()=>{
-        return db.getIndexes();
-    }).then((idxs)=>{
-        console.log("idxs after deleting: ");
-        console.log(idxs);
+        return db.getIndexes().then((idxs)=>{
+            assert.equal(idxs.indexes.length, 1)
+        });
     });
-}).then(()=>{
 
+}).then(()=>{
     declare var emit:any;
 
-    db.query(function (doc) {
+    return db.query(doc => {
         if(doc._id.startsWith('envelope:'))
             for(let f of [ 'sender','from','to','reply-to','to','cc','bcc' ])
                 if(doc.envelope[f])
                     doc.envelope[f].forEach(addr => { emit(addr.address); });
     }, {}).then(function (result) {
-        console.log(result);
+        assert.equal(result.total_rows,result.rows.length);
+        console.log("#addresses found in query: "+result.total_rows);
     });
 
 }).then(()=>{
-/*
     declare var emit:any;
 
     function mapAddr(doc) {
@@ -47,7 +51,7 @@ Promise.resolve().then(()=>{
     }
 
     let ddoc = {
-        _id: '_design/address',
+        _id: '_design/my_idx',
         views: {
             address: {
                 map: mapAddr.toString()
@@ -55,47 +59,43 @@ Promise.resolve().then(()=>{
         }
     };
 
-    db.query(function (doc) {
-        if(doc._id.startsWith('envelope:'))
-            for(let f of [ 'sender','from','to','reply-to','to','cc','bcc' ])
-                if(doc.envelope[f])
-                    doc.envelope[f].forEach(addr => { emit(addr.address); });
-    }, {}).then(function (result) {
-        console.log(result);
+    return pouchdb_store(db,ddoc._id,ddoc).then((response)=>{
+        console.log("successfully stored query")
+        console.log(response)
+    }).then(()=>{
+        return db.query("my_idx/address").then(result => {
+            assert.equal(result.total_rows,result.rows.length);
+            console.log("#addresses found in persitent query: "+result.total_rows);
+        });
     });
-*/
-}).then(()=>{
-/*
-    return Promise.resolve().then(()=>{
 
+
+}).then(()=>{
+    return Promise.resolve().then(()=>{
         return db.createIndex({
             index: {
                 fields:["envelope.subject"],
             }
+        }).then(result=>{
+            console.log("index created:");
+            console.log(result);
+            return db.getIndexes();
+        }).then(idxs=>{
+            console.log(idxs);
         })
-    })
-    .then(result=>{
-        console.log("index created:");
-        console.log(result);
-        return db.getIndexes();
-    })
-    .then(idxs=>{
-        console.log(idxs);
-    })
-    .then(()=>{
+
+    }).then(()=>{
         return db.find({
             selector: {
                 'envelope.subject': { $gt: "" }
             },
             fields: ['envelope.subject'],
+        }).then(found=>{
+            console.log(found)
         })
     })
-    .then(found=>{
-        console.log(found)
-    })
-*/
-}).then(()=>{
 
+}).then(()=>{
     return Promise.resolve().then(()=>{
 
         declare var emit:any;
@@ -108,43 +108,42 @@ Promise.resolve().then(()=>{
         return db.createIndex({
             index: {
               fields:[{"address":mapAddr.toString()}],
-//                fields:["envelope.subject"],
-        //    name:"address",
-        //    name:"subject",
             }
+        }).then(result=>{
+            console.log("index created:");
+            console.log(result);
         })
-    })
-    .then(result=>{
-        console.log("index created:");
-        console.log(result);
-        return db.getIndexes();
-    //    return db.get(result.id);
-    })
-    .then(idxs=>{
-        console.log(idxs);
-        Promise.all(
-            idxs.indexes
-            .filter(idx=>(!!idx.ddoc))
-            .map(idx=>(db.get(idx.ddoc).then(doc=>{
-                        console.log("ddoc.views:")
-                        console.log(doc.views)
-                    })))
-        );
 
-    //    console.log(doc.views['subject']);
-    //    console.log(doc.views['address']);
-    })
-    .then(()=>{
+    }).then(()=>{
+        return db.getIndexes().then(idxs=>{
+            console.log(idxs);
+            Promise.all(
+                idxs.indexes
+                .filter(idx=>(!!idx.ddoc))
+                .map(idx=>(db.get(idx.ddoc).then(doc=>{
+                            console.log("ddoc.views:")
+                            console.log(doc.views)
+                        })))
+            );
+        });
+
+    }).then(()=>{
         return db.find({
-            selector: {
-                'address': { $gt: "" }
+            selector: { address: { $gt: "Norbert" } },
+/*
+            selector: { $and: [
+                { 'address': { $gte: "Norbert" },
+                { 'address': { $lte: "Norbert\uFFFF" },
+                ]}
     //            'envelope.subject': { $gt: "Ubuntu" }
             },
-//            fields: ['address'],
+*/
+//            fields: ['subject'],
+        }).then(found=>{
+            console.log("found: ")
+            console.log(found.docs)
         })
     })
-    .then(found=>{
-        console.log(found.docs)
-    })
-
+}).catch(err=>{
+    console.error(err)
 })
