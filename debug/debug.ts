@@ -28,7 +28,7 @@ Promise.resolve().then(()=>{
     });
 
 }).then(()=>{
-    declare var emit:any;
+    var emit:any;
 
     return db.query(doc => {
         if(doc._id.startsWith('envelope:'))
@@ -41,7 +41,7 @@ Promise.resolve().then(()=>{
     });
 
 }).then(()=>{
-    declare var emit:any;
+    var emit:any;
 
     function mapAddr(doc) {
         if(doc._id.startsWith('envelope:'))
@@ -98,7 +98,7 @@ Promise.resolve().then(()=>{
 }).then(()=>{
     return Promise.resolve().then(()=>{
 
-        declare var emit:any;
+        var emit:any;
         function mapAddr(doc) {
             if(doc._id.startsWith('envelope:'))
                 for(let f of [ 'sender','from','to','reply-to','to','cc','bcc' ])
