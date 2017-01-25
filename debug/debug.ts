@@ -49,18 +49,15 @@ Promise.resolve().then(()=>{
 
     function mapAddr(doc) {
         if(doc._id.startsWith('envelope:'))
-            for(let f of [ 'sender','from','to','reply-to','to','cc','bcc' ])
-                if(doc.envelope[f])
-                    doc.envelope[f].forEach(addr => { emit(addr.address); });
+            for(let field of [ 'sender','from','to','reply-to','to','cc','bcc' ])
+                if(doc.envelope[field])
+                    doc.envelope[field].forEach(addr => { emit([field,addr.address]); });
     }
 
     let ddoc = {
         _id: '_design/my_idx',
         views: {
-            address_list: {
-                map: mapAddr.toString(),
-            },
-            address_count: {
+            address: {
                 map: mapAddr.toString(),
                 reduce: '_count',
             },
@@ -71,26 +68,44 @@ Promise.resolve().then(()=>{
         console.log("query is stored")
         console.log(response)
     }).then(()=>{
-        return db.query("my_idx/address_list").then(result => {
+        return db.query("my_idx/address",{
+            reduce: false,
+        }).then(result => {
             assert.equal(result.total_rows,result.rows.length);
             console.log("#address entries found: "+result.rows.length);
         });
     }).then(()=>{
-        return db.query("my_idx/address_list",{
-            startkey: "Norbert",
-            endkey: "Norbert\uffff",
+        return db.query("my_idx/address",{
+            reduce: false,
+            startkey: ["from"],
+            endkey: ["from",{}],
         }).then(result => {
             assert(result.total_rows > result.rows.length);
-            console.log("#address entries 'Norbert...' found.: "+result.rows.length);
+            console.log("#from address entries found.: "+result.rows.length);
         });
     }).then(()=>{
-        return db.query("my_idx/address_count",{
+        return db.query("my_idx/address",{
+            reduce: false,
+            startkey: ["to"],
+            endkey: ["to",{}],
+        }).then(result => {
+            assert(result.total_rows > result.rows.length);
+            console.log("#to address entries found.: "+result.rows.length);
+        });
+    }).then(()=>{
+        return db.query("my_idx/address",{
+            startkey: ["to"],
+            endkey: ["to",{}],
             reduce: true,
             group: true,
         }).then(result => {
-            console.log("#grouped addresses found: "+result.rows.length);
+            console.log("#unique to addresses found: "+result.rows.length);
+            console.log(result.rows.sort((a,b)=>(a.value-b.value)));
         });
     });
+
+}).then(()=>{
+    throw "success";
 
 }).then(()=>{
     console.log("==== createIndex / find ====")
@@ -117,9 +132,6 @@ Promise.resolve().then(()=>{
             console.log("#docs found: " + found.docs.length)
         })
     })
-
-}).then(()=>{
-    throw "success";
 
 }).then(()=>{
     console.log("==== find with Computed index ====")
