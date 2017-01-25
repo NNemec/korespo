@@ -51,16 +51,14 @@ export function pouchdb_observe(db: any, request: any): Observable<any[]> {
 
 export function pouchdb_store(db: any, id: string, newdoc: any): Promise<any> {
   newdoc._id = id;
-  let store = false;
+  let store: boolean;
+  let rev: string;
   return db.get(id).then((olddoc)=>{
     newdoc._rev = olddoc._rev;
     if(deepEqual(olddoc,newdoc)) {
       console.info("previous data (unchanged): " + id); // + JSON.stringify(olddoc));
-      return {
-        "ok": true,
-        "id": id,
-        "rev": olddoc._rev,
-      };
+      store = false;
+      rev = olddoc._rev;
     } else {
       console.info("found previous data: " + id); // + JSON.stringify(olddoc));
       store = true;
@@ -69,12 +67,20 @@ export function pouchdb_store(db: any, id: string, newdoc: any): Promise<any> {
     if(err.status && err.status === 404) {
       console.info("no previous data found.");
       store = true;
-    } else
+    } else {
       throw err;
+    }
   }).then(()=>{
     if(store) {
       console.info("storing new data: " + id); // + JSON.stringify(newdoc));
-      return db.put(newdoc);
+      return db.put(newdoc).then((result)=>{
+        rev = result.rev;
+      });
     }
-  });
+  }).then(()=>{
+    return {
+      stored: store,
+      rev: rev,
+    };
+  })
 };
