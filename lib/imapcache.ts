@@ -15,7 +15,7 @@ export class AccountData {
   pass: string = "";
 }
 
-export class ImapClient {
+export class ImapCache {
   private emailjsImapClient: any;
   private _accountData = new AccountData;
 

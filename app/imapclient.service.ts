@@ -2,25 +2,25 @@ import { Injectable, NgZone } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
-import { ImapClient, AccountData } from '../lib/imapclient';
+import { ImapCache, AccountData } from '../lib/imapcache';
 
 @Injectable()
 export class ImapClientService {
-  private imapClient = new ImapClient();
+  private imapCache = new ImapCache();
 
   constructor(private ngZone: NgZone) {
   }
 
   accountData(): AccountData {
-    return this.imapClient.accountData();
+    return this.imapCache.accountData();
   }
 
   isOpen(): boolean {
-    return this.imapClient.isOpen();
+    return this.imapCache.isOpen();
   }
 
   close(): void {
-    this.imapClient.close();
+    this.imapCache.close();
   }
 
   // PouchCache change notification do not run inside ngZone. Need this wrapper in between
@@ -34,38 +34,38 @@ export class ImapClientService {
   }
 
   observe_mailboxes(): Observable<any> {
-    return this.ngZoneWrap(this.imapClient.observe_mailboxes());
+    return this.ngZoneWrap(this.imapCache.observe_mailboxes());
   }
 
   observe_mailbox(path: string): Observable<any> {
-    return this.ngZoneWrap(this.imapClient.observe_mailbox(path));
+    return this.ngZoneWrap(this.imapCache.observe_mailbox(path));
   }
 
   observe_messages(path: string): Observable<any> {
-    return this.ngZoneWrap(this.imapClient.observe_messages(path));
+    return this.ngZoneWrap(this.imapCache.observe_messages(path));
   }
 
   isLoggedIn(): boolean {
-    return this.imapClient.isLoggedIn();
+    return this.imapCache.isLoggedIn();
   }
 
   login(): Promise<any> {
-    return this.imapClient.login();
+    return this.imapCache.login();
   }
 
   logout(): void {
-    return this.imapClient.logout();
+    return this.imapCache.logout();
   }
 
   updateMailboxes(): Promise<any> {
-    return this.imapClient.updateMailboxes();
+    return this.imapCache.updateMailboxes();
   }
 
   updateMailbox(path: string): void {
-    return this.imapClient.updateMailbox(path);
+    return this.imapCache.updateMailbox(path);
   }
 
   updateAll(): void {
-    return this.imapClient.updateAll();
+    return this.imapCache.updateAll();
   }
 }

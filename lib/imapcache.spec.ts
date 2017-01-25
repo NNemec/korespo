@@ -1,12 +1,12 @@
 /// <reference path="../typings/index.d.ts" />
 
-import { ImapClient } from "./imapclient";
+import { ImapCache } from "./imapcache";
 
 describe("PouchCache", () => {
-    let imapClient: ImapClient;
+    let imapClient: ImapCache;
 
     beforeEach(()=>{
-        imapClient = new ImapClient("./testdb");
+        imapClient = new ImapCache("./testdb");
     })
 
     afterEach(()=>{

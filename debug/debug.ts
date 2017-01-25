@@ -1,13 +1,13 @@
 const PouchDB = require('pouchdb');
 PouchDB.debug.enable('pouchdb:find')
 
-import { ImapClient } from '../lib/imapclient';
+import { ImapCache } from '../lib/imapcache';
 
 import * as assert from 'assert';
 import { pouchdb_store } from '../lib/util';
 
-let imapClient = new ImapClient('debugdb');
-let db = imapClient.dbAccess()
+let imapCache = new ImapCache('debugdb');
+let db = imapCache.dbAccess()
 
 Promise.resolve().then(()=>{
     return Promise.resolve().then(()=>{
