@@ -10,6 +10,11 @@
       "name": "Launch Program",
       "program": "${workspaceRoot}/debug/debug.ts",
       "cwd": "${workspaceRoot}",
+      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
+      "runtimeArgs": [
+            "--enable-logging"
+      ],
+      "env": {},
       "outFiles": [],
       "sourceMaps": true
     },
