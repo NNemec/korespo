@@ -28,6 +28,8 @@ Promise.resolve().then(()=>{
     });
 
 }).then(()=>{
+    console.log("==== Temporary queries ====")
+
     var emit:any;
 
     return db.query(doc => {
@@ -41,6 +43,8 @@ Promise.resolve().then(()=>{
     });
 
 }).then(()=>{
+    console.log("==== Persistent Map/Reduce queries ====")
+
     var emit:any;
 
     function mapAddr(doc) {
@@ -53,35 +57,54 @@ Promise.resolve().then(()=>{
     let ddoc = {
         _id: '_design/my_idx',
         views: {
-            address: {
-                map: mapAddr.toString()
-            }
+            address_list: {
+                map: mapAddr.toString(),
+            },
+            address_count: {
+                map: mapAddr.toString(),
+                reduce: '_count',
+            },
         }
     };
 
     return pouchdb_store(db,ddoc._id,ddoc).then((response)=>{
-        console.log("successfully stored query")
+        console.log("query is stored")
         console.log(response)
     }).then(()=>{
-        return db.query("my_idx/address").then(result => {
+        return db.query("my_idx/address_list").then(result => {
             assert.equal(result.total_rows,result.rows.length);
-            console.log("#addresses found in persitent query: "+result.total_rows);
+            console.log("#address entries found: "+result.rows.length);
+        });
+    }).then(()=>{
+        return db.query("my_idx/address_list",{
+            startkey: "Norbert",
+            endkey: "Norbert\uffff",
+        }).then(result => {
+            assert(result.total_rows > result.rows.length);
+            console.log("#address entries 'Norbert...' found.: "+result.rows.length);
+        });
+    }).then(()=>{
+        return db.query("my_idx/address_count",{
+            reduce: true,
+            group: true,
+        }).then(result => {
+            console.log("#grouped addresses found: "+result.rows.length);
         });
     });
 
-
 }).then(()=>{
+    console.log("==== createIndex / find ====")
+
     return Promise.resolve().then(()=>{
         return db.createIndex({
             index: {
                 fields:["envelope.subject"],
             }
         }).then(result=>{
-            console.log("index created:");
-            console.log(result);
+            console.log("index created");
             return db.getIndexes();
         }).then(idxs=>{
-            console.log(idxs);
+            assert(idxs.indexes.some(idx=>idx.def.fields[0]["envelope.subject"]))
         })
 
     }).then(()=>{
@@ -91,11 +114,16 @@ Promise.resolve().then(()=>{
             },
             fields: ['envelope.subject'],
         }).then(found=>{
-            console.log(found)
+            console.log("#docs found: " + found.docs.length)
         })
     })
 
 }).then(()=>{
+    throw "success";
+
+}).then(()=>{
+    console.log("==== find with Computed index ====")
+
     return Promise.resolve().then(()=>{
 
         var emit:any;
