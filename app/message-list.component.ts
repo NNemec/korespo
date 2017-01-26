@@ -10,6 +10,7 @@ import * as moment from 'moment';
 
 import { ImapClientService } from './imapclient.service';
 
+import *  as Imap from '../lib/imapcache';
 
 @Component({
   moduleId: module.id,
@@ -18,7 +19,7 @@ import { ImapClientService } from './imapclient.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddressesViewComponent implements OnChanges {
-  @Input() addresses: any[] = [];
+  @Input() addresses: Imap.Address[] = [];
 
   formatted: string;
 
@@ -28,7 +29,7 @@ export class AddressesViewComponent implements OnChanges {
     }
   }
 
-  format(addrList:{address:string,name:string}[]): string {
+  format(addrList:Imap.Address[]): string {
 //    return addrList ? addrList.map(({address,name})=>`${name} <${address}>`).join(', ') : "";
     return addrList ? addrList.map(({address,name})=>name).join(', ') : "";
   }
@@ -83,10 +84,10 @@ export class MessageListInternalComponent {
   template: '<message-list-internal [tableData]="tableData"></message-list-internal>'
 })
 export class MessageListComponent implements OnInit, OnDestroy {
-  @Input() folderPath: string;
+  @Input() mailbox: Imap.Mailbox;
 
   subscription: Subscription;
-  tableData: any[];
+  tableData: Imap.Envelope[];
 
   constructor(
     private imapClientService: ImapClientService
@@ -108,19 +109,19 @@ export class MessageListComponent implements OnInit, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if("folderPath" in changes) {
-      this.onFolderPathChanged();
+    if("mailbox" in changes) {
+      this.onMailboxChanged();
     }
   }
 
-  onFolderPathChanged() {
-    if( !this.folderPath )
+  onMailboxChanged() {
+    if( !this.mailbox )
       return;
 
     this.reset();
 
-    this.subscription = this.imapClientService.observe_messages(this.folderPath)
-    .subscribe((messages)=>{
+    this.subscription = this.imapClientService.observeEnvelopes(this.mailbox)
+    .subscribe((messages:Imap.Envelope[])=>{
       this.tableData = messages;
     });
   }

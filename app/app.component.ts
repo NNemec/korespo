@@ -2,6 +2,8 @@ import { Component, AfterViewInit } from '@angular/core';
 
 import { ImapClientService } from './imapclient.service';
 
+import * as Imap from '../lib/imapcache';
+
 @Component({
   moduleId: module.id,
   selector: 'my-app',
@@ -10,7 +12,7 @@ import { ImapClientService } from './imapclient.service';
 export class AppComponent implements AfterViewInit {
   showSetup: boolean = false;
 
-  currentFolderPath: string;
+  currentMailbox: Imap.Mailbox;
 
   constructor(
     private imapClientService: ImapClientService,
@@ -23,7 +25,7 @@ export class AppComponent implements AfterViewInit {
     this.showSetup = !this.showSetup;
   }
 
-  selectFolderPath(path:string) {
-    this.currentFolderPath = path;
+  selectMailbox(mailbox: Imap.Mailbox) {
+    this.currentMailbox = mailbox;
   }
 }

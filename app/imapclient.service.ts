@@ -2,16 +2,16 @@ import { Injectable, NgZone } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
-import { ImapCache, AccountData } from '../lib/imapcache';
+import * as Imap from '../lib/imapcache';
 
 @Injectable()
 export class ImapClientService {
-  private imapCache = new ImapCache();
+  private imapCache = new Imap.ImapCache();
 
   constructor(private ngZone: NgZone) {
   }
 
-  accountData(): AccountData {
+  accountData(): Imap.AccountData {
     return this.imapCache.accountData();
   }
 
@@ -33,16 +33,12 @@ export class ImapClientService {
     });
   }
 
-  observe_mailboxes(): Observable<any> {
-    return this.ngZoneWrap(this.imapCache.observe_mailboxes());
+  observeMailboxes(): Observable<Imap.Mailboxes> {
+    return this.ngZoneWrap(this.imapCache.observeMailboxes());
   }
 
-  observe_mailbox(path: string): Observable<any> {
-    return this.ngZoneWrap(this.imapCache.observe_mailbox(path));
-  }
-
-  observe_messages(path: string): Observable<any> {
-    return this.ngZoneWrap(this.imapCache.observe_messages(path));
+  observeEnvelopes(mailbox: Imap.Mailbox): Observable<Imap.Envelope[]> {
+    return this.ngZoneWrap(this.imapCache.observeEnvelopes(mailbox));
   }
 
   isLoggedIn(): boolean {
@@ -61,11 +57,11 @@ export class ImapClientService {
     return this.imapCache.updateMailboxes();
   }
 
-  updateMailbox(path: string): void {
-    return this.imapCache.updateMailbox(path);
+  updateMailbox(mailbox: Imap.Mailbox): Promise<void> {
+    return this.imapCache.updateMailbox(mailbox);
   }
 
-  updateAll(): void {
+  updateAll(): Promise<void> {
     return this.imapCache.updateAll();
   }
 }

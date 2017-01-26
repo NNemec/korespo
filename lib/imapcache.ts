@@ -5,15 +5,53 @@ PouchDB.plugin(require('pouchdb-find'));
 
 import { remote as ElectronRemote } from 'electron';
 
-import { pouchdb_observe, pouchdb_store } from './util';
+import { promiseLoop, pouchdb_observe, pouchdb_store } from './util';
 
+/*****************************************************************************/
+
+export interface Mailbox {
+  name: string;
+  path: string;
+  children?: Mailbox[];
+  flags: string[];
+  specialUse?: string[];
+};
+
+export interface Mailboxes {
+  children: Mailbox[];
+};
+
+export interface Address {
+  address: string;
+  name: string;
+};
+
+export interface Envelope {
+  flags?: string[];
+  envelope: {
+    "date"?: string;
+    "subject"?: string;
+    "from"?: Address[];
+    "sender"?: Address[];
+    "reply-to"?: Address[];
+    "to"?: Address[];
+    "cc"?: Address[];
+    "bcc"?: Address[];
+    "message-id"?: string;
+    "in-reply-to"?: string;
+  };
+};
+
+/*****************************************************************************/
 
 export class AccountData {
   host: string = "";
   port: number = 0;
   user: string = "";
   pass: string = "";
-}
+};
+
+/*****************************************************************************/
 
 export class ImapCache {
   private emailjsImapClient: any;
@@ -96,7 +134,7 @@ export class ImapCache {
     });
 
     this.retrieve("account").then((doc) => {
-      this._accountData = doc;
+      this._accountData = doc as AccountData;
     }).catch(()=>{
     });
 
@@ -110,16 +148,12 @@ export class ImapCache {
     }
   }
 
-  observe_mailboxes(): Observable<any> {
-    return this.observe("mailboxes");
+  observeMailboxes(): Observable<Mailboxes> {
+    return this.observe("mailboxes") as Observable<Mailboxes>;
   }
 
-  observe_mailbox(path: string): Observable<any> {
-    return this.observe("mailbox:"+path);
-  }
-
-  observe_messages(path: string): Observable<any> {
-    return this.observe_by_prefix("envelope:"+path+":");
+  observeEnvelopes(mailbox: Mailbox): Observable<Envelope[]> {
+    return this.observe_by_prefix("envelope:"+mailbox.path+":") as Observable<Envelope[]>;
   }
 
 
@@ -167,20 +201,24 @@ export class ImapCache {
     }
   }
 
-  updateMailboxes(): Promise<any> {
+  updateMailboxes(): Promise<Mailboxes> {
     if(!this.isLoggedIn())
-      throw "imapClient is not logged in!"
+      return Promise.reject<Mailboxes>("imapClient is not logged in!");
 
-    return this.emailjsImapClient.listMailboxes().then((mailboxes)=>{
-      return this.store("mailboxes", mailboxes);
-    });
+    return this.emailjsImapClient.listMailboxes()
+    .then((mailboxes)=>
+      this.store("mailboxes", mailboxes)
+      .then(()=>mailboxes)
+    );
   }
 
-  updateMailbox(path: string): void {
+  updateMailbox(mailbox: Mailbox): Promise<void> {
     if(!this.isLoggedIn())
-      throw "imapClient is not logged in!"
+      return Promise.reject("imapClient is not logged in!");
 
-    this.emailjsImapClient.selectMailbox(path,{readOnly:true}).then((mailbox)=>{
+    let path = mailbox.path;
+
+    return this.emailjsImapClient.selectMailbox(path,{readOnly:true}).then((mailbox)=>{
       return this.store("mailbox:"+path, mailbox);
     }).then(()=>{
       let p_imapmsgs = this.emailjsImapClient.listMessages(path,"1:*",['uid']);
@@ -213,17 +251,17 @@ export class ImapCache {
     });
   }
 
-  updateAll(): void {
-    this.retrieve("mailboxes").then((mailboxes)=>{
-      this.updateMailboxes().then(()=>{
-        let updateRecursively = ((children:any[])=>{
-          for(let child of children) {
-            this.updateMailbox(child.path);
-            updateRecursively(child.children);
-          }
-        })
-        updateRecursively(mailboxes.children);
-      });
-    })
+  updateAll(): Promise<void> {
+    let updateTreeRecursively = (children:Mailbox[]) => {
+      return promiseLoop(children,(mailbox)=>
+        this.updateMailbox(mailbox)
+        .then(()=>updateTreeRecursively(mailbox.children))
+      );
+    }
+
+    return this.updateMailboxes()
+    .then(mailboxes=>updateTreeRecursively(mailboxes.children));
   }
 }
+
+/*****************************************************************************/

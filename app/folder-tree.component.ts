@@ -10,24 +10,23 @@ import { TreeNode } from 'primeng/primeng';
 
 import { ImapClientService } from './imapclient.service';
 
+import * as Imap from '../lib/imapcache';
+
 @Component({
   moduleId: module.id,
   selector: 'folder-item',
   template: `
-    <span style="float:left" [pTooltip]="mailbox | json">{{ prefix }}{{ imapNode.name }} {{ mailbox?.exists }}</span>
+    <span style="float:left">{{ prefix }}{{ mailbox.name }}</span>
     <span style="float:right">
-    <button pButton (click)="imapClientService.updateMailbox(imapNode.path)"
+    <button pButton (click)="imapClientService.updateMailbox(mailbox)"
             [disabled]="!imapClientService.isLoggedIn()"
             icon="fa-refresh"
             style="font-size:0.6em"></button>
     </span>
   `,
 })
-export class FolderItemComponent implements OnInit, OnDestroy, OnChanges {
-  @Input() imapNode: any
-
-  subscription: Subscription;
-  mailbox: any
+export class FolderItemComponent implements OnChanges {
+  @Input() mailbox: Imap.Mailbox;
 
   prefix = ""
 
@@ -35,29 +34,14 @@ export class FolderItemComponent implements OnInit, OnDestroy, OnChanges {
     private imapClientService: ImapClientService
   ) {}
 
-  ngOnInit() {
-    this.subscription = this.imapClientService.observe_mailbox(this.imapNode.path).subscribe((mailbox)=>{
-      this.mailbox = mailbox;
-    });
-  }
-
-  ngOnDestroy() {
-    if(this.subscription)
-      this.subscription.unsubscribe();
-    this.subscription = undefined
-  }
-
   ngOnChanges(changes: SimpleChanges) {
-    if("imapNode" in changes) {
-      this.ngOnDestroy()
-      this.ngOnInit()
-
+    if("mailbox" in changes) {
       this.prefix = ""
 
-      let flags = this.imapNode.flags
-      if(this.imapNode.specialUse)
-        flags = flags.concat(this.imapNode.specialUse)
-      flags = new Set(flags)
+      let listFlags = this.mailbox.flags
+      if(this.mailbox.specialUse)
+        listFlags = listFlags.concat(this.mailbox.specialUse)
+      let flags = new Set(listFlags)
 
       flags.forEach((f)=>{
         switch(f) {
@@ -104,18 +88,18 @@ export class FolderTreeComponent implements OnInit, OnDestroy {
 
   selectedFolders: TreeNode[] = [];
 
-  @Output() folderPathSelected = new EventEmitter<string>();
+  @Output() mailboxSelected = new EventEmitter<Imap.Mailbox>();
 
   constructor(
     private imapClientService: ImapClientService
   ) {}
 
   ngOnInit() {
-    this.subscription = this.imapClientService.observe_mailboxes().subscribe((mailboxes)=>{
-      let converter = (imapNode)=>{
-        let res: TreeNode = {data:imapNode}
-        if("children" in imapNode) {
-          res.children = imapNode.children.map(converter);
+    this.subscription = this.imapClientService.observeMailboxes().subscribe((mailboxes:Imap.Mailboxes)=>{
+      let converter = (mailbox:Imap.Mailbox)=>{
+        let res: TreeNode = {data:mailbox}
+        if("children" in mailbox) {
+          res.children = mailbox.children.map(converter);
         }
         return res;
       }
@@ -128,8 +112,8 @@ export class FolderTreeComponent implements OnInit, OnDestroy {
   }
 
   onSelectFolder(event) {
-    let selectedFolder = event.node
-    console.log("Selected: " + selectedFolder.data.path)
-    this.folderPathSelected.emit(selectedFolder.data.path);
+    let selectedMailbox = event.node.data as Imap.Mailbox;
+    console.log("Selected: " + selectedMailbox.path)
+    this.mailboxSelected.emit(selectedMailbox);
   }
 }

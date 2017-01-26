@@ -9,6 +9,12 @@ require('events').defaultMaxListeners = 0;
 
 import * as deepEqual from 'deep-equal';
 
+export function promiseLoop<T>(list: T[],action: (T)=>Promise<void>): Promise<void> {
+  return (list.length === 0)
+          ? Promise.resolve()
+          : action(list[0]).then(()=>promiseLoop(list.slice(1),action));
+}
+
 export function pouchdb_observe(db: any, request: any): Observable<any[]> {
   return Observable.create((observer) => {
     let liveFeed = db.liveFind(request);

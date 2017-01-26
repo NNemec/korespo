@@ -4,6 +4,6 @@
              (onNodeSelect)="onSelectFolder($event)"
              [style]="{width:'100%',height:'100%','font-size':'0.8em',overflow:'auto'}">
     <template let-node pTemplate="default">
-        <folder-item [imapNode]='node.data'></folder-item>
+        <folder-item [mailbox]='node.data'></folder-item>
     </template>
 </p-tree>
