@@ -14,7 +14,7 @@ describe("PouchCache", () => {
   })
 
   it("can raw read/write", () => {
-    return imapClient.store("someid",{hello:"world"})
+    return imapClient.store({_id:"someid",hello:"world"})
     .then(()=>imapClient.retrieve("someid"))
     .then((doc)=>{ expect(doc.hello).toEqual("someid"); });
   });

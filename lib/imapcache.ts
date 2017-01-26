@@ -106,8 +106,8 @@ export class ImapCache {
     });
   }
 
-  store(id: string,newdoc: any): Promise<any> {
-    return pouchdb_store(this.db, id, newdoc);
+  store(newdoc: any): Promise<any> {
+    return pouchdb_store(this.db, newdoc);
   }
 
   store_bulk(newdocs: any[]): Promise<any> {
@@ -163,7 +163,7 @@ export class ImapCache {
   }
 
   login(): Promise<any> {
-    this.store("account",this._accountData);
+    this.store({...this._accountData, _id:"account"});
 
     const EmailjsImapClient = require('emailjs-imap-client');
 
@@ -207,7 +207,7 @@ export class ImapCache {
 
     return this.emailjsImapClient.listMailboxes()
     .then((mailboxes)=>
-      this.store("mailboxes", mailboxes)
+      this.store({...mailboxes, _id:"mailboxes"})
       .then(()=>mailboxes)
     );
   }
@@ -219,7 +219,7 @@ export class ImapCache {
     let path = mailbox.path;
 
     return this.emailjsImapClient.selectMailbox(path,{readOnly:true}).then((mailbox)=>{
-      return this.store("mailbox:"+path, mailbox);
+      return this.store({...mailbox, _id:"mailbox:"+path});
     }).then(()=>{
       let p_imapmsgs = this.emailjsImapClient.listMessages(path,"1:*",['uid']);
       let p_cachemsgs = this.retrieve_by_prefix("envelope:"+path+":");

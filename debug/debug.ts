@@ -64,9 +64,12 @@ Promise.resolve().then(()=>{
     }
   };
 
-  return pouchdb_store(db,ddoc._id,ddoc).then((response)=>{
-    console.log("query is stored")
-    console.log(response)
+  return pouchdb_store(db,ddoc).then((response)=>{
+    console.log("query ddoc is " + response.stored
+                                   ? "unchanged"
+                                   : response.found
+                                     ? "updated"
+                                     : "created")
   }).then(()=>{
     return db.query("my_idx/address",{
       reduce: false,
