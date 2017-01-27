@@ -1,7 +1,6 @@
 <p-tree [value]="treeData"
              selectionMode="multiple"
              [(selection)]="selectedFolders"
-             (onNodeSelect)="onSelectFolder($event)"
              [style]="{width:'100%',height:'100%','font-size':'0.8em',overflow:'auto'}">
     <template let-node pTemplate="default">
         <folder-item [mailbox]='node.data'></folder-item>

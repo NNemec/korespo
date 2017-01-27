@@ -86,9 +86,14 @@ export class FolderTreeComponent implements OnInit, OnDestroy {
   treeData: TreeNode[] = [];
   subscription: Subscription;
 
-  selectedFolders: TreeNode[] = [];
-
-  @Output() mailboxSelected = new EventEmitter<Imap.Mailbox>();
+  private _selectedFolders: TreeNode[] = [];
+  get selectedFolders(): TreeNode[] {
+    return this._selectedFolders;
+  }
+  set selectedFolders(val: TreeNode[]) {
+    this._selectedFolders = val;
+    this.imapClientService.filterFolders(val.map(node=>node.data as Imap.Mailbox));
+  }
 
   constructor(
     private imapClientService: ImapClientService
@@ -109,11 +114,5 @@ export class FolderTreeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-  }
-
-  onSelectFolder(event) {
-    let selectedMailbox = event.node.data as Imap.Mailbox;
-    console.log("Selected: " + selectedMailbox.path)
-    this.mailboxSelected.emit(selectedMailbox);
   }
 }

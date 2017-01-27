@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-find'));
@@ -6,6 +6,8 @@ PouchDB.plugin(require('pouchdb-find'));
 import { remote as ElectronRemote } from 'electron';
 
 import { promiseLoop, pouchdb_observe, pouchdb_store } from './util';
+
+import { Moment } from 'moment';
 
 /*****************************************************************************/
 
@@ -27,6 +29,7 @@ export interface Address {
 };
 
 export interface Envelope {
+  _id: string;
   flags?: string[];
   envelope: {
     "date"?: string;
@@ -42,6 +45,30 @@ export interface Envelope {
   };
 };
 
+export interface ImapModel {
+
+  readonly mailboxes: Observable<Mailboxes>;
+//  readonly addresses: Observable<Address[]>;
+//  readonly flags: Observable<string[]>;
+
+//  readonly filteredDates: Observable<Moment[]>;           // ignoring Date filter
+
+//  filterStartDate: Moment;
+//  filterEndDate: Moment;
+
+  readonly filteredMessages: Observable<Envelope[]>;
+
+//  filterAddresses: {addr:Address,hdr?:string}[];
+  filterMailboxes: Mailbox[];
+//  filterFlags: {flag:string,invert:boolean}[];
+
+//  countMsgPerAddress(addr:Address,hdr?:string): Observable<Number>;
+//  countMsgPerMailbox(mbx:Mailbox): Observable<Number>;
+//  countMsgPerFlag(flag:string): Observable<Number>;
+
+};
+
+
 /*****************************************************************************/
 
 export class AccountData {
@@ -53,7 +80,7 @@ export class AccountData {
 
 /*****************************************************************************/
 
-export class ImapCache {
+export class ImapCache implements ImapModel {
   private emailjsImapClient: any;
   private _accountData = new AccountData;
 
@@ -148,15 +175,34 @@ export class ImapCache {
     }
   }
 
-  observeMailboxes(): Observable<Mailboxes> {
+  get mailboxes(): Observable<Mailboxes> {
     return this.observe("mailboxes") as Observable<Mailboxes>;
   }
 
-  observeEnvelopes(mailbox: Mailbox): Observable<Envelope[]> {
-    return this.observe_by_prefix("envelope:"+mailbox.path+":") as Observable<Envelope[]>;
+  private _filterMailboxes = new BehaviorSubject<Mailbox[]>([]);
+
+  set filterMailboxes(val: Mailbox[]) {
+    this._filterMailboxes.next(val);
   }
 
+  get filterMailboxes(): Mailbox[] {
+    return this._filterMailboxes.value;
+  }
 
+  get filteredMessages(): Observable<Envelope[]> {
+    return Observable.combineLatest([
+      this.observe_by_prefix("envelope:") as Observable<Envelope[]>,
+      this._filterMailboxes,
+    ],(msgs:Envelope[],flts:Mailbox[])=>{
+      let res = msgs;
+      if(flts.length > 0) {
+        let paths = new Set(flts.map(mbx=>mbx.path));
+        console.log("filtering: " + paths);
+        res = res.filter(msg=>paths.has(msg._id.split(':',2)[1]));
+      }
+      return res;
+    });
+  }
 
   isLoggedIn(): boolean {
     return this.emailjsImapClient && this.isOpen();

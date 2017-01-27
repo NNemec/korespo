@@ -34,11 +34,15 @@ export class ImapClientService {
   }
 
   observeMailboxes(): Observable<Imap.Mailboxes> {
-    return this.ngZoneWrap(this.imapCache.observeMailboxes());
+    return this.ngZoneWrap(this.imapCache.mailboxes);
   }
 
-  observeEnvelopes(mailbox: Imap.Mailbox): Observable<Imap.Envelope[]> {
-    return this.ngZoneWrap(this.imapCache.observeEnvelopes(mailbox));
+  observeEnvelopes(): Observable<Imap.Envelope[]> {
+    return this.ngZoneWrap(this.imapCache.filteredMessages);
+  }
+
+  filterFolders(mailboxes: Imap.Mailbox[]) {
+    this.imapCache.filterMailboxes = mailboxes
   }
 
   isLoggedIn(): boolean {

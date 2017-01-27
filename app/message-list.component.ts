@@ -84,8 +84,6 @@ export class MessageListInternalComponent {
   template: '<message-list-internal [tableData]="tableData"></message-list-internal>'
 })
 export class MessageListComponent implements OnInit, OnDestroy {
-  @Input() mailbox: Imap.Mailbox;
-
   subscription: Subscription;
   tableData: Imap.Envelope[];
 
@@ -94,35 +92,13 @@ export class MessageListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.reset();
-  }
-
-  ngOnDestroy() {
-    this.reset();
-  }
-
-  reset() {
-    if(this.subscription)
-      this.subscription.unsubscribe();
-    this.subscription = undefined;
-    this.tableData = [];
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if("mailbox" in changes) {
-      this.onMailboxChanged();
-    }
-  }
-
-  onMailboxChanged() {
-    if( !this.mailbox )
-      return;
-
-    this.reset();
-
-    this.subscription = this.imapClientService.observeEnvelopes(this.mailbox)
+    this.subscription = this.imapClientService.observeEnvelopes()
     .subscribe((messages:Imap.Envelope[])=>{
       this.tableData = messages;
     });
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 }

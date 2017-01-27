@@ -12,8 +12,6 @@ import * as Imap from '../lib/imapcache';
 export class AppComponent implements AfterViewInit {
   showSetup: boolean = false;
 
-  currentMailbox: Imap.Mailbox;
-
   constructor(
     private imapClientService: ImapClientService,
   ) {}
@@ -23,9 +21,5 @@ export class AppComponent implements AfterViewInit {
 
   toggleSetup() {
     this.showSetup = !this.showSetup;
-  }
-
-  selectMailbox(mailbox: Imap.Mailbox) {
-    this.currentMailbox = mailbox;
   }
 }
