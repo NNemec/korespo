@@ -68,9 +68,31 @@ export class DateViewComponent implements OnChanges {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MessageListInternalComponent {
-  @Input() tableData: any[];
+  private _messages: any[] = [];
+  totalMessageCount = 0;
 
-  selectedMessages: any[];
+  @Input()
+  set messages(val: any[]) {
+    this._messages = val ? val : [];
+    this.totalMessageCount = this._messages.length;
+    this.tableData = this._messages.slice(0,this._limitMessageCount);
+  };
+  get messages(): any[] {
+    return this._messages;
+  };
+
+  private _limitMessageCount = 50;
+  set limitMessageCount(val: number) {
+    this._limitMessageCount = val;
+    this.tableData = this._messages.slice(0,this._limitMessageCount);
+  }
+  get limitMessageCount(): number {
+    return this._limitMessageCount;
+  }
+
+  tableData: any[] = [];
+
+  selectedMessages: any[] = [];
 
   onSelectMessages(event) {
     let selectedMessage = event.node
@@ -81,11 +103,11 @@ export class MessageListInternalComponent {
 @Component({
   moduleId: module.id,
   selector: 'message-list',
-  template: '<message-list-internal [tableData]="tableData"></message-list-internal>'
+  template: '<message-list-internal [messages]="messages"></message-list-internal>'
 })
 export class MessageListComponent implements OnInit, OnDestroy {
   subscription: Subscription;
-  tableData: Imap.Envelope[];
+  messages: Imap.Envelope[];
 
   constructor(
     private imapClientService: ImapClientService
@@ -94,7 +116,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscription = this.imapClientService.observeEnvelopes()
     .subscribe((messages:Imap.Envelope[])=>{
-      this.tableData = messages;
+      this.messages = messages;
     });
   }
 
