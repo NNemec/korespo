@@ -166,6 +166,14 @@ export class ImapCache implements ImapModel {
     });
 
     this.allMessages = (this.observe_by_prefix("envelope:") as Observable<Envelope[]>).publishBehavior([]).refCount();
+
+    this._statisticsPerMailbox = this.allMessages.flatMap((msgs:Envelope[])=>{
+      return Observable.from(msgs).reduce((res:Map<string,number>,env:Envelope)=>{
+        let path = env._id.split(':',2)[1];
+        res.set(path,(v=>v?v+1:1)(res.get(path)));
+        return res;
+      },new Map<string,number>());
+    }).publishBehavior(new Map<string,number>()).refCount();
   }
 
   close(): void {
@@ -178,6 +186,20 @@ export class ImapCache implements ImapModel {
 
   get mailboxes(): Observable<Mailboxes> {
     return this.observe("mailboxes") as Observable<Mailboxes>;
+  }
+
+  get mapMailboxes(): Observable<Map<string,Mailbox>> {
+    return this.mailboxes.map((mbxs:Mailboxes)=>{
+      let res = new Map<string,Mailbox>();
+      let recursion = (mbxs:Mailbox[])=>{
+        mbxs.forEach((mbx)=>{
+          res.set(mbx.path, mbx);
+          recursion(mbx.children);
+        });
+      };
+      recursion(mbxs.children);
+      return res;
+    });
   }
 
   private _filterMailboxes = new BehaviorSubject<Mailbox[]>([]);
@@ -205,11 +227,10 @@ export class ImapCache implements ImapModel {
     });
   }
 
+  private _statisticsPerMailbox: Observable<Map<string,number>>;
+
   countMessagesPerMailbox(mbx:Mailbox): Observable<number> {
-    let prefix = "envelope:" + mbx.path + ":"
-    return this.allMessages.flatMap((msgs:Envelope[])=>{
-      return Observable.from(msgs).count(msg=>msg._id.startsWith(prefix));
-    });
+    return this._statisticsPerMailbox.map(map=>map.get(mbx.path));
   }
 
   isLoggedIn(): boolean {
