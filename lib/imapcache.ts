@@ -142,7 +142,6 @@ export class ImapCache implements ImapModel {
 
 
   allMessages: Observable<Envelope[]>;
-  subscription: Subscription;
 
   constructor(path: string = undefined) {
     if(!path)
@@ -166,9 +165,7 @@ export class ImapCache implements ImapModel {
     }).catch(()=>{
     });
 
-    this.allMessages = (this.observe_by_prefix("envelope:") as Observable<Envelope[]>).publishBehavior([]);
-
-    this.subscription = (this.allMessages as ConnectableObservable<Envelope[]>).connect();
+    this.allMessages = (this.observe_by_prefix("envelope:") as Observable<Envelope[]>).publishBehavior([]).refCount();
   }
 
   close(): void {
@@ -176,7 +173,6 @@ export class ImapCache implements ImapModel {
       this.db.close();
       this.db = undefined;
       this._isOpen = false;
-      this.subscription.unsubscribe();
     }
   }
 
