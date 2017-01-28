@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule }   from '@angular/forms';
 
 import { ButtonModule }      from 'primeng/primeng';
+import { DataListModule }   from 'primeng/primeng';
 import { DataTableModule }   from 'primeng/primeng';
 import { DialogModule }      from 'primeng/primeng';
 import { InputTextModule }   from 'primeng/primeng';
@@ -14,6 +15,7 @@ import { TooltipModule }     from 'primeng/primeng';
 import { TreeModule }        from 'primeng/primeng';
 
 import { AppComponent }      from './app.component';
+import { AddressPaneComponent } from './address-pane.component';
 import { FolderItemComponent,
          FolderTreeComponent }  from './folder-tree.component';
 import { AddressesViewComponent,
@@ -29,6 +31,7 @@ import { ImapClientService } from './imapclient.service';
     FormsModule,
 
     ButtonModule,
+    DataListModule,
     DataTableModule,
     DialogModule,
     InputTextModule,
@@ -41,6 +44,8 @@ import { ImapClientService } from './imapclient.service';
   ],
   declarations: [
     AppComponent,
+
+    AddressPaneComponent,
 
     FolderItemComponent,
     FolderTreeComponent,

@@ -182,12 +182,15 @@ export class ImapCache implements ImapModel {
     this._messagesPerAddress = this.allMessages.flatMap((msgs:Envelope[])=>{
       let newEntry = ()=>AddrHdrs.map(hdr=>new Set<Envelope>());
       return Observable.from(msgs).reduce((res:Map<Address,Set<Envelope>[]>,env:Envelope)=>{
-        for(let hdrIdx in AddrHdrs.keys()) {
-          for(let addr of env.envelope[AddrHdrs[hdrIdx]]) {
-            if(!res.has(addr)) {
-              res.set(addr,newEntry())
+        for(let hdrIdx = 0; hdrIdx < AddrHdrs.length; hdrIdx++) {
+          let addrs = env.envelope[AddrHdrs[hdrIdx]];
+          if(addrs) {
+            for(let addr of addrs) {
+              if(!res.has(addr)) {
+                res.set(addr,newEntry())
+              }
+              res.get(addr)[hdrIdx].add(env);
             }
-            res.get(addr)[hdrIdx].add(env);
           }
         }
         return res;
