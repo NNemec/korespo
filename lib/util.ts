@@ -25,7 +25,7 @@ export function pouchdb_observe(db: any, request: any): Observable<any[]> {
     .then((res)=>{
 //        console.log("initial query of " + request + " successful: " + res);
     },(err)=>{
-      console.error("initial query of " + request + " failed:")
+      console.error("initial query of ", request, " failed:", err)
       observer.error(err);
     });
 
@@ -46,7 +46,7 @@ export function pouchdb_observe(db: any, request: any): Observable<any[]> {
       observer.complete();
     })
     .on("error",(err)=>{
-      console.error("continuous query of " + request + " failed");
+      console.error("continuous query of ", request, " failed: ", err);
       observer.error(err);
     });
 
