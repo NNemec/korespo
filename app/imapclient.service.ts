@@ -46,7 +46,7 @@ export class ImapClientService {
   }
 
   countMessagesPerMailbox(mbx: Imap.Mailbox): Observable<number> {
-    return this.ngZoneWrap(this.imapCache.countMessagesPerMailbox(mbx));
+    return this.ngZoneWrap(this.imapCache.countMsgsPerMailbox(mbx));
   }
 
   isLoggedIn(): boolean {

@@ -23,6 +23,8 @@ export interface Mailboxes {
   children: Mailbox[];
 };
 
+const AddrHdrs = ["from", "sender", "reply-to", "to", "cc", "bcc"];
+
 export interface Address {
   address: string;
   name: string;
@@ -48,7 +50,7 @@ export interface Envelope {
 export interface ImapModel {
 
   readonly mailboxes: Observable<Mailboxes>;
-//  readonly addresses: Observable<Address[]>;
+  readonly addresses: Observable<Address[]>;
 //  readonly flags: Observable<string[]>;
 
 //  readonly filteredDates: Observable<Moment[]>;           // ignoring Date filter
@@ -58,13 +60,13 @@ export interface ImapModel {
 
   readonly filteredMessages: Observable<Envelope[]>;
 
-//  filterAddresses: {addr:Address,hdr?:string}[];
+//  filterAddresses: {addr:Address,hdr?:AddrHdr}[];
   filterMailboxes: Mailbox[];
 //  filterFlags: {flag:string,invert:boolean}[];
 
-//  countMsgPerAddress(addr:Address,hdr?:string): Observable<Number>;
-  countMsgPerMailbox(mbx:Mailbox): Observable<Number>;
-//  countMsgPerFlag(flag:string): Observable<Number>;
+//  countMsgsPerAddress(addr:Address,hdr?:string): Observable<Number>;
+  countMsgsPerMailbox(mbx:Mailbox): Observable<Number>;
+//  countMsgsPerFlag(flag:string): Observable<Number>;
 };
 
 
@@ -142,6 +144,8 @@ export class ImapCache implements ImapModel {
 
 
   allMessages: Observable<Envelope[]>;
+  private _statisticsPerMailbox: Observable<Map<string,number>>;
+  private _messagesPerAddress: Observable<Map<Address,Set<Envelope>[]>>;
 
   constructor(path: string = undefined) {
     if(!path)
@@ -174,6 +178,21 @@ export class ImapCache implements ImapModel {
         return res;
       },new Map<string,number>());
     }).publishBehavior(new Map<string,number>()).refCount();
+
+    this._messagesPerAddress = this.allMessages.flatMap((msgs:Envelope[])=>{
+      let newEntry = ()=>AddrHdrs.map(hdr=>new Set<Envelope>());
+      return Observable.from(msgs).reduce((res:Map<Address,Set<Envelope>[]>,env:Envelope)=>{
+        for(let hdrIdx in AddrHdrs.keys()) {
+          for(let addr of env.envelope[AddrHdrs[hdrIdx]]) {
+            if(!res.has(addr)) {
+              res.set(addr,newEntry())
+            }
+            res.get(addr)[hdrIdx].add(env);
+          }
+        }
+        return res;
+      },new Map<Address,Set<Envelope>[]>());
+    }).publishBehavior(new Map<Address,Set<Envelope>[]>()).refCount();
   }
 
   close(): void {
@@ -202,6 +221,10 @@ export class ImapCache implements ImapModel {
     });
   }
 
+  get addresses(): Observable<Address[]> {
+    return this._messagesPerAddress.map(stats=>Array.from(stats.keys()));
+  }
+
   private _filterMailboxes = new BehaviorSubject<Mailbox[]>([]);
 
   set filterMailboxes(val: Mailbox[]) {
@@ -227,9 +250,7 @@ export class ImapCache implements ImapModel {
     });
   }
 
-  private _statisticsPerMailbox: Observable<Map<string,number>>;
-
-  countMessagesPerMailbox(mbx:Mailbox): Observable<number> {
+  countMsgsPerMailbox(mbx:Mailbox): Observable<number> {
     return this._statisticsPerMailbox.map(map=>map.get(mbx.path));
   }
 
