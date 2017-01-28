@@ -41,7 +41,7 @@ export class ImapClientService {
     return this.ngZoneWrap(this.imapCache.filteredMessages);
   }
 
-  observeAddresses(): Observable<Imap.Address[]> {
+  observeAddresses(): Observable<Imap.AddrStats[]> {
     return this.ngZoneWrap(this.imapCache.addresses);
   }
 

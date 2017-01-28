@@ -12,7 +12,7 @@ import * as Imap from '../lib/imapcache';
   templateUrl: 'address-pane.component.html',
 })
 export class AddressPaneComponent implements OnInit {
-  addresses: Imap.Address[] = [];
+  addresses: Imap.AddrStats[] = [];
   subscription: Subscription;
 
   constructor(
@@ -20,7 +20,7 @@ export class AddressPaneComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.subscription = this.imapClientService.observeAddresses().subscribe((addrs:Imap.Address[])=>{
+    this.subscription = this.imapClientService.observeAddresses().subscribe((addrs:Imap.AddrStats[])=>{
       this.addresses = addrs;
     });
   }
