@@ -16,7 +16,7 @@ import * as Imap from '../lib/imapcache';
   moduleId: module.id,
   selector: 'folder-item',
   template: `
-    <span style="float:left">{{ prefix }}{{ mailbox.name }}</span>
+    <span style="float:left">{{ prefix }} {{ mailbox.name }} {{ countMessages }}</span>
     <span style="float:right">
     <button pButton (click)="imapClientService.updateMailbox(mailbox)"
             [disabled]="!imapClientService.isLoggedIn()"
@@ -25,44 +25,54 @@ import * as Imap from '../lib/imapcache';
     </span>
   `,
 })
-export class FolderItemComponent implements OnChanges {
+export class FolderItemComponent implements OnInit, OnDestroy {
   @Input() mailbox: Imap.Mailbox;
 
-  prefix = ""
+  prefix = "";
+  countMessages = 0;
+
+  private subscription: Subscription;
 
   constructor(
     private imapClientService: ImapClientService
   ) {}
 
-  ngOnChanges(changes: SimpleChanges) {
-    if("mailbox" in changes) {
-      this.prefix = ""
+  ngOnInit() {
+    this.prefix = ""
 
-      let listFlags = this.mailbox.flags
-      if(this.mailbox.specialUse)
-        listFlags = listFlags.concat(this.mailbox.specialUse)
-      let flags = new Set(listFlags)
+    let listFlags = this.mailbox.flags
+    if(this.mailbox.specialUse)
+      listFlags = listFlags.concat(this.mailbox.specialUse)
+    let flags = new Set(listFlags)
 
-      flags.forEach((f)=>{
-        switch(f) {
-          case "\\HasNoChildren": break;
-          case "\\HasChildren":   break;
-          case "\\NoInferiors":   break;
-          case "\\All":           this.prefix += "🌍 "; break;
-          case "\\NoSelect":      this.prefix += "🚫 "; break;
-          case "\\Trash":         this.prefix += "🗑 "; break;
+    flags.forEach((f)=>{
+      switch(f) {
+        case "\\HasNoChildren": break;
+        case "\\HasChildren":   break;
+        case "\\NoInferiors":   break;
+        case "\\All":           this.prefix += "🌍 "; break;
+        case "\\NoSelect":      this.prefix += "🚫 "; break;
+        case "\\Trash":         this.prefix += "🗑 "; break;
 
-          case "\\Archive":       this.prefix += "📦 "; break;
-          case "\\Drafts":        this.prefix += "📝 "; break;
-          case "\\Sent":          this.prefix += "💨 "; break;
-          case "\\Junk":          this.prefix += "💩 "; break;
+        case "\\Archive":       this.prefix += "📦 "; break;
+        case "\\Drafts":        this.prefix += "📝 "; break;
+        case "\\Sent":          this.prefix += "💨 "; break;
+        case "\\Junk":          this.prefix += "💩 "; break;
 
-          default: this.prefix += f + " ";
-        }
-      });
-      if(this.prefix == "")
-        this.prefix = "📁 "
-    }
+        default: this.prefix += f + " ";
+      }
+    });
+    if(this.prefix == "")
+      this.prefix = "📁 "
+
+    this.subscription = this.imapClientService.countMessagesPerMailbox(this.mailbox)
+    .subscribe(count=>{
+      this.countMessages=count;
+    });
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 }
 

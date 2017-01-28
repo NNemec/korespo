@@ -1,4 +1,4 @@
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, ConnectableObservable, Subscription } from 'rxjs';
 
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-find'));
@@ -63,9 +63,8 @@ export interface ImapModel {
 //  filterFlags: {flag:string,invert:boolean}[];
 
 //  countMsgPerAddress(addr:Address,hdr?:string): Observable<Number>;
-//  countMsgPerMailbox(mbx:Mailbox): Observable<Number>;
+  countMsgPerMailbox(mbx:Mailbox): Observable<Number>;
 //  countMsgPerFlag(flag:string): Observable<Number>;
-
 };
 
 
@@ -142,6 +141,8 @@ export class ImapCache implements ImapModel {
   }
 
 
+  allMessages: Observable<Envelope[]>;
+  subscription: Subscription;
 
   constructor(path: string = undefined) {
     if(!path)
@@ -165,6 +166,9 @@ export class ImapCache implements ImapModel {
     }).catch(()=>{
     });
 
+    this.allMessages = (this.observe_by_prefix("envelope:") as Observable<Envelope[]>).publishBehavior([]);
+
+    this.subscription = (this.allMessages as ConnectableObservable<Envelope[]>).connect();
   }
 
   close(): void {
@@ -172,6 +176,7 @@ export class ImapCache implements ImapModel {
       this.db.close();
       this.db = undefined;
       this._isOpen = false;
+      this.subscription.unsubscribe();
     }
   }
 
@@ -191,7 +196,7 @@ export class ImapCache implements ImapModel {
 
   get filteredMessages(): Observable<Envelope[]> {
     return Observable.combineLatest([
-      this.observe_by_prefix("envelope:") as Observable<Envelope[]>,
+      this.allMessages,
       this._filterMailboxes,
     ],(msgs:Envelope[],flts:Mailbox[])=>{
       let res = msgs;
@@ -201,6 +206,13 @@ export class ImapCache implements ImapModel {
         res = res.filter(msg=>paths.has(msg._id.split(':',2)[1]));
       }
       return res;
+    });
+  }
+
+  countMessagesPerMailbox(mbx:Mailbox): Observable<number> {
+    let prefix = "envelope:" + mbx.path + ":"
+    return this.allMessages.flatMap((msgs:Envelope[])=>{
+      return Observable.from(msgs).count(msg=>msg._id.startsWith(prefix));
     });
   }
 
@@ -227,12 +239,12 @@ export class ImapCache implements ImapModel {
     client.logLevel = EmailjsImapClient.LOG_LEVEL_INFO;
 
     return client.connect().catch((err)=>{
-      console.error("login failed: " + err);
+      console.error("login failed: ", err);
       client.close();
       throw err;
     }).then(()=>{
       client.onerror = (err)=>{
-        console.error("imapClient error: " + err);
+        console.error("imapClient error: ", err);
         this.logout();
       }
       this.emailjsImapClient = client;
