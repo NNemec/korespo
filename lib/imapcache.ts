@@ -49,9 +49,6 @@ export interface Envelope {
 
 export interface AddrStats {
   addr: string;
-  "any": number;
-  "src": number;
-  "dst": number,
   "from": number;
   "sender": number;
   "reply-to": number;
@@ -242,14 +239,8 @@ export class ImapCache implements ImapModel {
     return this._messagesPerAddress.map(entries=>{
       let res: AddrStats[] = [];
       entries.forEach((value: Set<Envelope>[], key: string)=>{
-        let src = new Set([...Array(value[0]),...Array(value[1]),...Array(value[2])]);
-        let dst = new Set([...Array(value[3]),...Array(value[4]),...Array(value[5])]);
-        let any = new Set([...Array(src),...Array(dst)]);
         let stats = <AddrStats>{
           addr: key,
-          "any": any.size,
-          "src": src.size,
-          "dst": dst.size,
           "from": value[0].size,
           "sender": value[1].size,
           "reply-to": value[2].size,
