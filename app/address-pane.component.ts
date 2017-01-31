@@ -15,6 +15,15 @@ export class AddressPaneComponent implements OnInit {
   addresses: Imap.AddrStats[] = [];
   subscription: Subscription;
 
+  private _selectedAddresses: Imap.AddrStats[] = [];
+  get selectedAddresses(): Imap.AddrStats[] {
+    return this._selectedAddresses;
+  }
+  set selectedAddresses(val: Imap.AddrStats[]) {
+    this._selectedAddresses = val;
+    this.imapClientService.filterAddresses(val.map(addrStats=>addrStats.addr));
+  }
+
   constructor(
     private imapClientService: ImapClientService
   ) {}

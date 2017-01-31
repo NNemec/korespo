@@ -46,7 +46,11 @@ export class ImapClientService {
   }
 
   filterFolders(mailboxes: Imap.Mailbox[]) {
-    this.imapCache.filterMailboxes = mailboxes
+    this.imapCache.filterMailboxes = mailboxes;
+  }
+
+  filterAddresses(addrs: string[]) {
+//    this.imapCache.filterAddresses = addrs;
   }
 
   countMessagesPerMailbox(mbx: Imap.Mailbox): Observable<number> {
