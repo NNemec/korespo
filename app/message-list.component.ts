@@ -80,6 +80,14 @@ export class DateViewComponent implements OnChanges {
     * >>> .ui-datatable-scrollable-body {
       flex: 1 1 0;
     }
+
+    * >>> .ui-datatable .ui-datatable-data>tr {
+      border: 0;
+    }
+    * >>> .ui-datatable .ui-datatable-data>tr>td {
+      border: 0;
+      padding: .1em .1em;
+    }
   `],
 })
 export class MessageListInternalComponent {
