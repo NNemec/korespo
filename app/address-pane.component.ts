@@ -10,6 +10,21 @@ import * as Imap from '../lib/imapcache';
   moduleId: module.id,
   selector: 'address-pane',
   templateUrl: 'address-pane.component.html',
+  styles: [`
+    * >>> .ui-datatable-scrollable-wrapper {
+      height:100%
+    }
+
+    * >>> .ui-datatable-scrollable-view {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    * >>> .ui-datatable-scrollable-body {
+      flex: 1 1 0;
+    }
+  `],
 })
 export class AddressPaneComponent implements OnInit {
   addresses: Imap.AddrStats[] = [];

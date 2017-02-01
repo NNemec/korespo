@@ -65,7 +65,22 @@ export class DateViewComponent implements OnChanges {
   moduleId: module.id,
   selector: 'message-list-internal',
   templateUrl: 'message-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    * >>> .ui-datatable-scrollable-wrapper {
+      height:100%
+    }
+
+    * >>> .ui-datatable-scrollable-view {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    * >>> .ui-datatable-scrollable-body {
+      flex: 1 1 0;
+    }
+  `],
 })
 export class MessageListInternalComponent {
   private _messages: any[] = [];
