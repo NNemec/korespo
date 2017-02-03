@@ -137,7 +137,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.subscription = this.imapClientService.observeEnvelopes()
+    this.subscription = this.imapClientService.envelopes
     .subscribe((messages:Imap.Envelope[])=>{
       this.messages = messages;
     });

@@ -47,8 +47,16 @@ export interface Envelope {
   };
 };
 
+/*****************************************************************************/
+
+export interface Contact {
+  addrs: AddrStats[];
+  total: AddrStats;
+}
+
 export interface AddrStats {
-  addr: string;
+  contact: Contact;
+  addr: Address;
   "from": number;
   "sender": number;
   "reply-to": number;
@@ -60,7 +68,7 @@ export interface AddrStats {
 export interface ImapModel {
 
   readonly mailboxes: Observable<Mailboxes>;
-  readonly addresses: Observable<AddrStats[]>;
+  readonly contacts: Observable<Contact[]>;
 //  readonly flags: Observable<string[]>;
 
 //  readonly filteredDates: Observable<Moment[]>;           // ignoring Date filter
@@ -196,7 +204,7 @@ export class ImapCache implements ImapModel {
           let addrs = env.envelope[AddrHdrs[hdrIdx]];
           if(addrs) {
             for(let addr of addrs) {
-              let strAddr = addr.name + ' <' + addr.address + '>'
+              let strAddr = addr.name + '\n' + addr.address
               if(!res.has(strAddr)) {
                 res.set(strAddr,newEntry())
               }
@@ -235,12 +243,34 @@ export class ImapCache implements ImapModel {
     });
   }
 
-  get addresses(): Observable<AddrStats[]> {
+  get contacts(): Observable<Contact[]> {
     return this._messagesPerAddress.map(entries=>{
-      let res: AddrStats[] = [];
+      let map = new Map<string,Contact>();
+
       entries.forEach((value: Set<Envelope>[], key: string)=>{
-        let stats = <AddrStats>{
-          addr: key,
+        let addrSplit = key.split('\n',2);
+        let addr: Address = { name: addrSplit[0], address: addrSplit[1] };
+        let lowerCaseAddr = addr.address.toLowerCase();
+        let contact: Contact;
+        if(map.has(lowerCaseAddr)) {
+          contact = map.get(lowerCaseAddr);
+        } else {
+          contact = { addrs: [], total: {
+            contact: contact,
+            addr: addr,
+            "from": 0,
+            "sender": 0,
+            "reply-to": 0,
+            "to": 0,
+            "cc": 0,
+            "bcc": 0,
+          } }
+          map.set(lowerCaseAddr,contact);
+        }
+
+        let stats: AddrStats = {
+          contact: contact,
+          addr: addr,
           "from": value[0].size,
           "sender": value[1].size,
           "reply-to": value[2].size,
@@ -248,9 +278,34 @@ export class ImapCache implements ImapModel {
           "cc": value[4].size,
           "bcc": value[5].size,
         };
-        res.push(stats);
+
+        contact.addrs.push(stats);
       });
-      return res;
+
+      let contacts: Contact[] = [];
+      map.forEach(contact=>{
+        let maxFrom = 0;
+        let maxDst = 0;
+        contact.addrs.forEach(stats=>{
+          if(stats.from > maxFrom) {
+            maxFrom = stats.from;
+            contact.total.addr = stats.addr;
+          }
+          if(maxFrom == 0 && stats.to + stats.cc + stats.bcc > maxDst) {
+            maxDst = stats.to + stats.cc + stats.bcc;
+            contact.total.addr = stats.addr;
+          }
+          contact.total.from += stats.from;
+          contact.total.sender += stats.sender;
+          contact.total["reply-to"] += stats["reply-to"];
+          contact.total.to += stats.to;
+          contact.total.cc += stats.cc;
+          contact.total.bcc += stats.bcc;
+        });
+
+        contacts.push(contact);
+      })
+      return contacts;
     });
   }
 

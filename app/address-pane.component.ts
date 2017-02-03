@@ -35,16 +35,16 @@ import * as Imap from '../lib/imapcache';
   `],
 })
 export class AddressPaneComponent implements OnInit {
-  addresses: Imap.AddrStats[] = [];
+  contacts: Imap.Contact[] = [];
   subscription: Subscription;
 
-  private _selectedAddresses: Imap.AddrStats[] = [];
-  get selectedAddresses(): Imap.AddrStats[] {
-    return this._selectedAddresses;
+  private _selectedContacts: Imap.Contact[] = [];
+  get selectedContacts(): Imap.Contact[] {
+    return this._selectedContacts;
   }
-  set selectedAddresses(val: Imap.AddrStats[]) {
-    this._selectedAddresses = val;
-    this.imapClientService.filterAddresses(val.map(addrStats=>addrStats.addr));
+  set selectedContacts(val: Imap.Contact[]) {
+    this._selectedContacts = val;
+    this.imapClientService.filterContacts(val);
   }
 
   constructor(
@@ -52,8 +52,8 @@ export class AddressPaneComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.subscription = this.imapClientService.observeAddresses().subscribe((addrs:Imap.AddrStats[])=>{
-      this.addresses = addrs;
+    this.subscription = this.imapClientService.contacts.subscribe((contacts:Imap.Contact[])=>{
+      this.contacts = contacts;
     });
   }
 

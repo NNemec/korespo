@@ -1,6 +1,6 @@
-<p-dataTable [value]="addresses"
+<p-dataTable [value]="contacts"
              selectionMode="multiple"
-             [(selection)]="selectedAddresses"
+             [(selection)]="selectedContacts"
 
              sortMode="single"
 
@@ -17,11 +17,11 @@
       </p-toolbar>
     </header-->
 
-    <p-column header="Address" field="addr" sortable="true" [style]="{'text-overflow':'ellipsis','width':'50%'}">
+    <p-column header="Name" field="total.addr.name" sortable="true" [style]="{'text-overflow':'ellipsis','width':'50%'}">
     </p-column>
-    <p-column header="From" field="from" sortable="true" [style]="{'text-overflow':'ellipsis','width':'25%'}">
+    <p-column header="From" field="total.from" sortable="true" [style]="{'text-overflow':'ellipsis','width':'25%'}">
     </p-column>
-    <p-column header="To" field="to" sortable="true" [style]="{'text-overflow':'ellipsis','width':'25%'}">
+    <p-column header="To" field="total.to" sortable="true" [style]="{'text-overflow':'ellipsis','width':'25%'}">
     </p-column>
     <!--p-column header="From" field="envelope.from" [style]="{'text-overflow':'ellipsis'}">
         <template let-col let-data="rowData" pTemplate="body">

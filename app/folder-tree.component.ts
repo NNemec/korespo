@@ -110,7 +110,7 @@ export class FolderTreeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.subscription = this.imapClientService.observeMailboxes().subscribe((mailboxes:Imap.Mailboxes)=>{
+    this.subscription = this.imapClientService.mailboxes.subscribe((mailboxes:Imap.Mailboxes)=>{
       let converter = (mailbox:Imap.Mailbox)=>{
         let res: TreeNode = {data:mailbox}
         if("children" in mailbox) {
