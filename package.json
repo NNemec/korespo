@@ -32,7 +32,6 @@
     "@angular/router": "^3.4.3",
     "@angular/upgrade": "^2.4.3",
     "angular-in-memory-web-api": "^0.2.4",
-    "core-js": "^2.4.1",
     "deep-equal": "^1.0.1",
     "electron-reload": "^1.1.0",
     "emailjs-imap-client": "^2.0.3",
@@ -47,7 +46,6 @@
     "zone.js": "^0.7.6"
   },
   "devDependencies": {
-    "@types/core-js": "^0.9.35",
     "@types/node": "^7.0.0",
     "concurrently": "^3.1.0",
     "electron": "^1.4.14",
