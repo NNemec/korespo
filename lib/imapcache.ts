@@ -48,6 +48,7 @@ export interface MsgSummary {
 /*****************************************************************************/
 
 export class Contact {
+  displayName: string;
   addrs: AddrStats[] = [];
   total = new AddrStats();
 }
@@ -280,6 +281,9 @@ export class ImapCache implements ImapModel {
           }
           contact.total.add(stats);
         });
+        contact.displayName = contact.total.addr.name;
+        if(contact.displayName === "")
+          contact.displayName = contact.total.addr.address;
 
         contacts.push(contact);
       }
