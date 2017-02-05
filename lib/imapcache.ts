@@ -199,7 +199,8 @@ export class ImapCache implements ImapModel {
 
     this._messagesPerAddress = this.allMessages.flatMap((msgs:Envelope[])=>{
       let newEntry = ()=>AddrHdrs.map(hdr=>new Set<Envelope>());
-      return Observable.from(msgs).reduce((res:Map<string,Set<Envelope>[]>,env:Envelope)=>{
+      return Observable.from(msgs).reduce((res:Map<string,Set<Envelope>[]> = new Map<string,Set<Envelope>[]>(),
+                                           env:Envelope)=>{
         for(let hdrIdx = 0; hdrIdx < AddrHdrs.length; hdrIdx++) {
           let addrs = env.envelope[AddrHdrs[hdrIdx]];
           if(addrs) {
@@ -213,7 +214,7 @@ export class ImapCache implements ImapModel {
           }
         }
         return res;
-      },new Map<string,Set<Envelope>[]>());
+      },undefined);
     }).publishBehavior(new Map<string,Set<Envelope>[]>()).refCount();
   }
 
