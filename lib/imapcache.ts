@@ -197,24 +197,25 @@ export class ImapCache implements ImapModel {
       },new Map<string,number>());
     }).publishBehavior(new Map<string,number>()).refCount();
 
-    this._messagesPerAddress = this.allMessages.flatMap((msgs:MsgSummary[])=>{
+    this._messagesPerAddress = this.allMessages.map(msgs=>{
       let newEntry = ()=>AddrHdrs.map(hdr=>new Set<MsgSummary>());
-      return Observable.from(msgs).reduce((res:Map<string,Set<MsgSummary>[]> = new Map<string,Set<MsgSummary>[]>(),
-                                           env:MsgSummary)=>{
+
+      let res = new Map<string,Set<MsgSummary>[]>();
+      msgs.forEach(msg=>{
         for(let hdrIdx = 0; hdrIdx < AddrHdrs.length; hdrIdx++) {
-          let addrs = env.envelope[AddrHdrs[hdrIdx]];
+          let addrs = msg.envelope[AddrHdrs[hdrIdx]];
           if(addrs) {
             for(let addr of addrs) {
               let strAddr = addr.name + '\n' + addr.address
               if(!res.has(strAddr)) {
                 res.set(strAddr,newEntry())
               }
-              res.get(strAddr)[hdrIdx].add(env);
+              res.get(strAddr)[hdrIdx].add(msg);
             }
           }
         }
-        return res;
-      },undefined);
+      });
+      return res;
     }).publishBehavior(new Map<string,Set<MsgSummary>[]>()).refCount();
   }
 
