@@ -78,7 +78,7 @@ export interface ImapModel {
 
   readonly filteredMessages: Observable<MsgSummary[]>;
 
-//  filterAddresses: {addr:NamedAddr,hdr?:AddrHdr}[];
+  filterContacts: Contact[];
   filterMailboxes: Mailbox[];
 //  filterFlags: {flag:string,invert:boolean}[];
 
@@ -320,11 +320,22 @@ export class ImapCache implements ImapModel {
     return this._filterMailboxes.value;
   }
 
+  private _filterContacts = new BehaviorSubject<Contact[]>([]);
+
+  set filterContacts(val: Contact[]) {
+    this._filterContacts.next(val);
+  }
+
+  get filterContacts(): Contact[] {
+    return this._filterContacts.value;
+  }
+
   get filteredMessages(): Observable<MsgSummary[]> {
     return Observable.combineLatest([
       this.allMessages,
       this._filterMailboxes,
-    ],(msgs:MsgSummary[],mbxs:Mailbox[])=>{
+      this._filterContacts,
+    ],(msgs:MsgSummary[],mbxs:Mailbox[],ctts:Contact[])=>{
       let res = msgs;
       if(mbxs.length > 0) {
         let paths = new Set(mbxs.map(mbx=>mbx.path));

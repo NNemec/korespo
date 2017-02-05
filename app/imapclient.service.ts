@@ -50,7 +50,7 @@ export class ImapClientService {
   }
 
   filterContacts(contacts: Imap.Contact[]) {
-//    this.imapCache.filterContacts = contacts;
+    this.imapCache.filterContacts = contacts;
   }
 
   countMessagesPerMailbox(mbx: Imap.Mailbox): Observable<number> {
