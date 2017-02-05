@@ -23,8 +23,6 @@ export interface MailboxTree {
   children: Mailbox[];
 };
 
-const AddrHdrs = ["from", "sender", "reply-to", "to", "cc", "bcc"];
-
 export interface NamedAddr {
   address: string;
   name: string;
@@ -49,20 +47,23 @@ export interface MsgSummary {
 
 /*****************************************************************************/
 
-export interface Contact {
-  addrs: AddrStats[];
-  total: AddrStats;
+export class Contact {
+  addrs: AddrStats[] = [];
+  total = new AddrStats();
 }
 
-export interface AddrStats {
+export class AddrStats {
   contact: Contact;
   addr: NamedAddr;
-  "from": number;
-  "sender": number;
-  "reply-to": number;
-  "to": number;
-  "cc": number;
-  "bcc": number;
+  from = 0;
+  to = 0;
+  cc = 0;
+
+  add(other: AddrStats) {
+    this.from += other.from;
+    this.to += other.to;
+    this.cc += other.cc;
+  }
 }
 
 export interface ImapModel {
@@ -163,7 +164,7 @@ export class ImapCache implements ImapModel {
 
   allMessages: Observable<MsgSummary[]>;
   private _statisticsPerMailbox: Observable<Map<string,number>>;
-  private _messagesPerAddress: Observable<Map<string,Set<MsgSummary>[]>>;
+  private _messagesPerAddress: Observable<Map<string,AddrStats>>;
 
   constructor(path: string = undefined) {
     if(!path)
@@ -198,25 +199,25 @@ export class ImapCache implements ImapModel {
     }).publishBehavior(new Map<string,number>()).refCount();
 
     this._messagesPerAddress = this.allMessages.map(msgs=>{
-      let newEntry = ()=>AddrHdrs.map(hdr=>new Set<MsgSummary>());
-
-      let res = new Map<string,Set<MsgSummary>[]>();
-      msgs.forEach(msg=>{
-        for(let hdrIdx = 0; hdrIdx < AddrHdrs.length; hdrIdx++) {
-          let addrs = msg.envelope[AddrHdrs[hdrIdx]];
+      let res = new Map<string,AddrStats>();
+      for(let msg of msgs) {
+        for(let hdr of ["from","to", "cc"]) {
+          let addrs = msg.envelope[hdr];
           if(addrs) {
             for(let addr of addrs) {
               let strAddr = addr.name + '\n' + addr.address
               if(!res.has(strAddr)) {
-                res.set(strAddr,newEntry())
+                let newStats = new AddrStats();
+                newStats.addr = { address: addr.address, name: addr.name };
+                res.set(strAddr,newStats)
               }
-              res.get(strAddr)[hdrIdx].add(msg);
+              res.get(strAddr)[hdr] += 1;
             }
           }
         }
-      });
+      }
       return res;
-    }).publishBehavior(new Map<string,Set<MsgSummary>[]>()).refCount();
+    }).publishBehavior(new Map<string,AddrStats>()).refCount();
   }
 
   close(): void {
@@ -249,7 +250,7 @@ export class ImapCache implements ImapModel {
     return this._messagesPerAddress.map(entries=>{
       let map = new Map<string,Contact>();
 
-      entries.forEach((value: Set<MsgSummary>[], key: string)=>{
+      entries.forEach((stats: AddrStats, key: string)=>{
         let addrSplit = key.split('\n',2);
         let addr: NamedAddr = { name: addrSplit[0], address: addrSplit[1] };
         let lowerCaseAddr = addr.address.toLowerCase();
@@ -257,31 +258,12 @@ export class ImapCache implements ImapModel {
         if(map.has(lowerCaseAddr)) {
           contact = map.get(lowerCaseAddr);
         } else {
-          contact = { addrs: [], total: {
-            contact: contact,
-            addr: addr,
-            "from": 0,
-            "sender": 0,
-            "reply-to": 0,
-            "to": 0,
-            "cc": 0,
-            "bcc": 0,
-          } }
+          contact = new Contact();
           map.set(lowerCaseAddr,contact);
         }
 
-        let stats: AddrStats = {
-          contact: contact,
-          addr: addr,
-          "from": value[0].size,
-          "sender": value[1].size,
-          "reply-to": value[2].size,
-          "to": value[3].size,
-          "cc": value[4].size,
-          "bcc": value[5].size,
-        };
-
         contact.addrs.push(stats);
+        stats.contact = contact;
       });
 
       let contacts: Contact[] = [];
@@ -293,16 +275,11 @@ export class ImapCache implements ImapModel {
             maxFrom = stats.from;
             contact.total.addr = stats.addr;
           }
-          if(maxFrom == 0 && stats.to + stats.cc + stats.bcc > maxDst) {
-            maxDst = stats.to + stats.cc + stats.bcc;
+          if(maxFrom == 0 && stats.to + stats.cc > maxDst) {
+            maxDst = stats.to + stats.cc;
             contact.total.addr = stats.addr;
           }
-          contact.total.from += stats.from;
-          contact.total.sender += stats.sender;
-          contact.total["reply-to"] += stats["reply-to"];
-          contact.total.to += stats.to;
-          contact.total.cc += stats.cc;
-          contact.total.bcc += stats.bcc;
+          contact.total.add(stats);
         });
 
         contacts.push(contact);
