@@ -200,22 +200,17 @@ export class ImapCache implements ImapModel {
 
     this._messagesPerAddress = this.allMessages.map(msgs=>{
       let res = new Map<string,AddrStats>();
-      for(let msg of msgs) {
-        for(let hdr of ["from","to", "cc"]) {
-          let addrs = msg.envelope[hdr];
-          if(addrs) {
-            for(let addr of addrs) {
-              let strAddr = addr.name + '\n' + addr.address
-              if(!res.has(strAddr)) {
-                let newStats = new AddrStats();
-                newStats.addr = { address: addr.address, name: addr.name };
-                res.set(strAddr,newStats)
-              }
-              res.get(strAddr)[hdr] += 1;
+      for(let msg of msgs)
+        for(let hdr of ["from","to", "cc"])
+          for(let addr of msg.envelope[hdr] || []) {
+            let strAddr = addr.name + '\n' + addr.address
+            if(!res.has(strAddr)) {
+              let newStats = new AddrStats();
+              newStats.addr = { address: addr.address, name: addr.name };
+              res.set(strAddr,newStats)
             }
+            res.get(strAddr)[hdr] += 1;
           }
-        }
-      }
       return res;
     }).publishBehavior(new Map<string,AddrStats>()).refCount();
   }
