@@ -324,10 +324,10 @@ export class ImapCache implements ImapModel {
     return Observable.combineLatest([
       this.allMessages,
       this._filterMailboxes,
-    ],(msgs:Envelope[],flts:Mailbox[])=>{
+    ],(msgs:Envelope[],mbxs:Mailbox[])=>{
       let res = msgs;
-      if(flts.length > 0) {
-        let paths = new Set(flts.map(mbx=>mbx.path));
+      if(mbxs.length > 0) {
+        let paths = new Set(mbxs.map(mbx=>mbx.path));
         console.log("filtering: " + paths);
         res = res.filter(msg=>paths.has(msg._id.split(':',2)[1]));
       }
