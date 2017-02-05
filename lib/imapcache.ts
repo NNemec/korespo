@@ -227,7 +227,7 @@ export class ImapCache implements ImapModel {
   }
 
   get mailboxTree(): Observable<MailboxTree> {
-    return this.observe("mailboxTree") as Observable<MailboxTree>;
+    return this.observe("mailboxes") as Observable<MailboxTree>;
   }
 
   get mapMailboxes(): Observable<Map<string,Mailbox>> {
@@ -388,7 +388,7 @@ export class ImapCache implements ImapModel {
 
     return this.emailjsImapClient.listMailboxes()
     .then((mailboxTree)=>
-      this.store({...mailboxTree, _id:"mailboxTree"})
+      this.store({...mailboxTree, _id:"mailboxes"})
       .then(()=>mailboxTree)
     );
   }
