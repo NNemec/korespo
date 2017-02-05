@@ -10,14 +10,14 @@
 
              [style]="{width:'100%',height:'100%','font-size':'0.7em','white-space':'nowrap'}">
 
-    <header>
+    <p-header>
       <p-toolbar>
         <div class="ui-toolbar-group-right">
             {{ limitMessageCount }} / {{ totalMessageCount}}
             <p-slider [(ngModel)]="limitMessageCount" [max]="totalMessageCount" [style]="{'width':'100px'}"></p-slider>
         </div>
       </p-toolbar>
-    </header>
+    </p-header>
 
     <p-column header="Subject" field="envelope.subject" sortable="true" [style]="{'text-overflow':'ellipsis','width':'50%'}">
     </p-column>

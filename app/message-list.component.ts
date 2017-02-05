@@ -67,8 +67,13 @@ export class DateViewComponent implements OnChanges {
   templateUrl: 'message-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
+    * >>> .ui-datatable-scrollable {
+      display: flex;
+      flex-direction: column;
+    }
+
     * >>> .ui-datatable-scrollable-wrapper {
-      height:100%
+      flex: 1 1 0;
     }
 
     * >>> .ui-datatable-scrollable-view {

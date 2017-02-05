@@ -11,8 +11,13 @@ import * as Imap from '../lib/imapcache';
   selector: 'address-pane',
   templateUrl: 'address-pane.component.html',
   styles: [`
+    * >>> .ui-datatable-scrollable {
+      display: flex;
+      flex-direction: column;
+    }
+
     * >>> .ui-datatable-scrollable-wrapper {
-      height:100%
+      flex: 1 1 0;
     }
 
     * >>> .ui-datatable-scrollable-view {
