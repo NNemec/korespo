@@ -59,6 +59,12 @@ export class AddrStats {
   to = 0;
   cc = 0;
 
+  constructor(addr?:NamedAddr) {
+    if(addr) {
+      this.addr = { address: addr.address, name: addr.name }
+    }
+  }
+
   add(other: AddrStats) {
     this.from += other.from;
     this.to += other.to;
@@ -163,8 +169,8 @@ export class ImapCache implements ImapModel {
 
 
   allMessages: Observable<MsgSummary[]>;
-  private _statisticsPerMailbox: Observable<Map<string,number>>;
-  private _messagesPerAddress: Observable<Map<string,AddrStats>>;
+  private _statisticsPerMailbox: Observable<{[id:string]:number}>;
+  private _messagesPerAddress: Observable<{[id:string]:AddrStats}>;
 
   constructor(path: string = undefined) {
     if(!path)
@@ -190,29 +196,28 @@ export class ImapCache implements ImapModel {
 
     this.allMessages = (this.observe_by_prefix("envelope:") as Observable<MsgSummary[]>).publishBehavior([]).refCount();
 
-    this._statisticsPerMailbox = this.allMessages.flatMap((msgs:MsgSummary[])=>{
-      return Observable.from(msgs).reduce((res:Map<string,number>,env:MsgSummary)=>{
-        let path = env._id.split(':',2)[1];
-        res.set(path,(v=>v?v+1:1)(res.get(path)));
-        return res;
-      },new Map<string,number>());
-    }).publishBehavior(new Map<string,number>()).refCount();
+    this._statisticsPerMailbox = this.allMessages.map((msgs:MsgSummary[])=>{
+      let res: {[id:string]:number} = {};
+      for(let msg of msgs) {
+        let path = msg._id.split(':',2)[1];
+        res[path] = (res[path] || 0) + 1;
+      }
+      return res;
+    }).publishBehavior({}).refCount();
 
     this._messagesPerAddress = this.allMessages.map(msgs=>{
-      let res = new Map<string,AddrStats>();
+      let res: {[id:string]:AddrStats} = {};
       for(let msg of msgs)
         for(let hdr of ["from","to", "cc"])
           for(let addr of msg.envelope[hdr] || []) {
             let strAddr = addr.name + '\n' + addr.address
-            if(!res.has(strAddr)) {
-              let newStats = new AddrStats();
-              newStats.addr = { address: addr.address, name: addr.name };
-              res.set(strAddr,newStats)
-            }
-            res.get(strAddr)[hdr] += 1;
+            let stats = res[strAddr];
+            if(!stats)
+              stats = res[strAddr] = new AddrStats(addr);
+            stats[hdr] += 1;
           }
       return res;
-    }).publishBehavior(new Map<string,AddrStats>()).refCount();
+    }).publishBehavior({}).refCount();
   }
 
   close(): void {
@@ -243,26 +248,25 @@ export class ImapCache implements ImapModel {
 
   get contacts(): Observable<Contact[]> {
     return this._messagesPerAddress.map(entries=>{
-      let map = new Map<string,Contact>();
+      let map: {[id:string]:Contact} = {};
 
-      entries.forEach((stats: AddrStats, key: string)=>{
+      for(let key in entries) {
+        let stats = entries[key];
         let addrSplit = key.split('\n',2);
         let addr: NamedAddr = { name: addrSplit[0], address: addrSplit[1] };
         let lowerCaseAddr = addr.address.toLowerCase();
-        let contact: Contact;
-        if(map.has(lowerCaseAddr)) {
-          contact = map.get(lowerCaseAddr);
-        } else {
-          contact = new Contact();
-          map.set(lowerCaseAddr,contact);
-        }
+        let contact = map[lowerCaseAddr];
+
+        if(!contact)
+          contact = map[lowerCaseAddr] = new Contact();
 
         contact.addrs.push(stats);
         stats.contact = contact;
-      });
+      };
 
       let contacts: Contact[] = [];
-      map.forEach(contact=>{
+      for(let id in map) {
+        let contact = map[id];
         let maxFrom = 0;
         let maxDst = 0;
         contact.addrs.forEach(stats=>{
@@ -278,7 +282,7 @@ export class ImapCache implements ImapModel {
         });
 
         contacts.push(contact);
-      })
+      }
       return contacts;
     });
   }
@@ -344,7 +348,7 @@ export class ImapCache implements ImapModel {
   }
 
   countMsgsPerMailbox(mbx:Mailbox): Observable<number> {
-    return this._statisticsPerMailbox.map(map=>map.get(mbx.path));
+    return this._statisticsPerMailbox.map(map=>map[mbx.path]);
   }
 
   isLoggedIn(): boolean {
