@@ -315,11 +315,35 @@ export class ImapCache implements ImapModel {
       this._filterContacts,
     ],(msgs:MsgSummary[],mbxs:Mailbox[],ctts:Contact[])=>{
       let res = msgs;
+
       if(mbxs.length > 0) {
         let paths = new Set(mbxs.map(mbx=>mbx.path));
         console.log("filtering: " + paths);
         res = res.filter(msg=>paths.has(msg._id.split(':',2)[1]));
       }
+
+      if(ctts.length > 0) {
+        function* gen() {
+          for(let ctt of ctts)
+            for(let addr of ctt.addrs)
+              yield addr.addr.name + "\n" + addr.addr.address;
+        };
+
+        let addrs = new Set<string>(gen());
+
+        res = res.filter(msg=>{
+          for(let addr of msg.envelope.from || [])
+            if(addrs.has(addr.name + "\n" + addr.address))
+              return true;
+          for(let addr of msg.envelope.to || [])
+            if(addrs.has(addr.name + "\n" + addr.address))
+              return true;
+          for(let addr of msg.envelope.cc || [])
+            if(addrs.has(addr.name + "\n" + addr.address))
+              return true;
+        });
+      }
+
       return res;
     });
   }
