@@ -33,11 +33,11 @@ export class ImapClientService {
     });
   }
 
-  get mailboxes(): Observable<Imap.Mailboxes> {
-    return this.ngZoneWrap(this.imapCache.mailboxes);
+  get mailboxTree(): Observable<Imap.MailboxTree> {
+    return this.ngZoneWrap(this.imapCache.mailboxTree);
   }
 
-  get envelopes(): Observable<Imap.Envelope[]> {
+  get envelopes(): Observable<Imap.MsgSummary[]> {
     return this.ngZoneWrap(this.imapCache.filteredMessages);
   }
 
@@ -45,8 +45,8 @@ export class ImapClientService {
     return this.ngZoneWrap(this.imapCache.contacts);
   }
 
-  filterFolders(mailboxes: Imap.Mailbox[]) {
-    this.imapCache.filterMailboxes = mailboxes;
+  filterFolders(mailboxTree: Imap.Mailbox[]) {
+    this.imapCache.filterMailboxes = mailboxTree;
   }
 
   filterContacts(contacts: Imap.Contact[]) {

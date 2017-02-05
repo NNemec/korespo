@@ -19,29 +19,29 @@ export interface Mailbox {
   specialUse?: string[];
 };
 
-export interface Mailboxes {
+export interface MailboxTree {
   children: Mailbox[];
 };
 
 const AddrHdrs = ["from", "sender", "reply-to", "to", "cc", "bcc"];
 
-export interface Address {
+export interface NamedAddr {
   address: string;
   name: string;
 };
 
-export interface Envelope {
+export interface MsgSummary {
   _id: string;
   flags?: string[];
   envelope: {
     "date"?: string;
     "subject"?: string;
-    "from"?: Address[];
-    "sender"?: Address[];
-    "reply-to"?: Address[];
-    "to"?: Address[];
-    "cc"?: Address[];
-    "bcc"?: Address[];
+    "from"?: NamedAddr[];
+    "sender"?: NamedAddr[];
+    "reply-to"?: NamedAddr[];
+    "to"?: NamedAddr[];
+    "cc"?: NamedAddr[];
+    "bcc"?: NamedAddr[];
     "message-id"?: string;
     "in-reply-to"?: string;
   };
@@ -56,7 +56,7 @@ export interface Contact {
 
 export interface AddrStats {
   contact: Contact;
-  addr: Address;
+  addr: NamedAddr;
   "from": number;
   "sender": number;
   "reply-to": number;
@@ -67,7 +67,7 @@ export interface AddrStats {
 
 export interface ImapModel {
 
-  readonly mailboxes: Observable<Mailboxes>;
+  readonly mailboxTree: Observable<MailboxTree>;
   readonly contacts: Observable<Contact[]>;
 //  readonly flags: Observable<string[]>;
 
@@ -76,13 +76,13 @@ export interface ImapModel {
 //  filterStartDate: Moment;
 //  filterEndDate: Moment;
 
-  readonly filteredMessages: Observable<Envelope[]>;
+  readonly filteredMessages: Observable<MsgSummary[]>;
 
-//  filterAddresses: {addr:Address,hdr?:AddrHdr}[];
+//  filterAddresses: {addr:NamedAddr,hdr?:AddrHdr}[];
   filterMailboxes: Mailbox[];
 //  filterFlags: {flag:string,invert:boolean}[];
 
-//  countMsgsPerAddress(addr:Address,hdr?:string): Observable<Number>;
+//  countMsgsPerAddress(addr:NamedAddr,hdr?:string): Observable<Number>;
   countMsgsPerMailbox(mbx:Mailbox): Observable<Number>;
 //  countMsgsPerFlag(flag:string): Observable<Number>;
 };
@@ -161,9 +161,9 @@ export class ImapCache implements ImapModel {
   }
 
 
-  allMessages: Observable<Envelope[]>;
+  allMessages: Observable<MsgSummary[]>;
   private _statisticsPerMailbox: Observable<Map<string,number>>;
-  private _messagesPerAddress: Observable<Map<string,Set<Envelope>[]>>;
+  private _messagesPerAddress: Observable<Map<string,Set<MsgSummary>[]>>;
 
   constructor(path: string = undefined) {
     if(!path)
@@ -187,20 +187,20 @@ export class ImapCache implements ImapModel {
     }).catch(()=>{
     });
 
-    this.allMessages = (this.observe_by_prefix("envelope:") as Observable<Envelope[]>).publishBehavior([]).refCount();
+    this.allMessages = (this.observe_by_prefix("envelope:") as Observable<MsgSummary[]>).publishBehavior([]).refCount();
 
-    this._statisticsPerMailbox = this.allMessages.flatMap((msgs:Envelope[])=>{
-      return Observable.from(msgs).reduce((res:Map<string,number>,env:Envelope)=>{
+    this._statisticsPerMailbox = this.allMessages.flatMap((msgs:MsgSummary[])=>{
+      return Observable.from(msgs).reduce((res:Map<string,number>,env:MsgSummary)=>{
         let path = env._id.split(':',2)[1];
         res.set(path,(v=>v?v+1:1)(res.get(path)));
         return res;
       },new Map<string,number>());
     }).publishBehavior(new Map<string,number>()).refCount();
 
-    this._messagesPerAddress = this.allMessages.flatMap((msgs:Envelope[])=>{
-      let newEntry = ()=>AddrHdrs.map(hdr=>new Set<Envelope>());
-      return Observable.from(msgs).reduce((res:Map<string,Set<Envelope>[]> = new Map<string,Set<Envelope>[]>(),
-                                           env:Envelope)=>{
+    this._messagesPerAddress = this.allMessages.flatMap((msgs:MsgSummary[])=>{
+      let newEntry = ()=>AddrHdrs.map(hdr=>new Set<MsgSummary>());
+      return Observable.from(msgs).reduce((res:Map<string,Set<MsgSummary>[]> = new Map<string,Set<MsgSummary>[]>(),
+                                           env:MsgSummary)=>{
         for(let hdrIdx = 0; hdrIdx < AddrHdrs.length; hdrIdx++) {
           let addrs = env.envelope[AddrHdrs[hdrIdx]];
           if(addrs) {
@@ -215,7 +215,7 @@ export class ImapCache implements ImapModel {
         }
         return res;
       },undefined);
-    }).publishBehavior(new Map<string,Set<Envelope>[]>()).refCount();
+    }).publishBehavior(new Map<string,Set<MsgSummary>[]>()).refCount();
   }
 
   close(): void {
@@ -226,12 +226,12 @@ export class ImapCache implements ImapModel {
     }
   }
 
-  get mailboxes(): Observable<Mailboxes> {
-    return this.observe("mailboxes") as Observable<Mailboxes>;
+  get mailboxTree(): Observable<MailboxTree> {
+    return this.observe("mailboxTree") as Observable<MailboxTree>;
   }
 
   get mapMailboxes(): Observable<Map<string,Mailbox>> {
-    return this.mailboxes.map((mbxs:Mailboxes)=>{
+    return this.mailboxTree.map((mbxs:MailboxTree)=>{
       let res = new Map<string,Mailbox>();
       let recursion = (mbxs:Mailbox[])=>{
         mbxs.forEach((mbx)=>{
@@ -248,9 +248,9 @@ export class ImapCache implements ImapModel {
     return this._messagesPerAddress.map(entries=>{
       let map = new Map<string,Contact>();
 
-      entries.forEach((value: Set<Envelope>[], key: string)=>{
+      entries.forEach((value: Set<MsgSummary>[], key: string)=>{
         let addrSplit = key.split('\n',2);
-        let addr: Address = { name: addrSplit[0], address: addrSplit[1] };
+        let addr: NamedAddr = { name: addrSplit[0], address: addrSplit[1] };
         let lowerCaseAddr = addr.address.toLowerCase();
         let contact: Contact;
         if(map.has(lowerCaseAddr)) {
@@ -320,11 +320,11 @@ export class ImapCache implements ImapModel {
     return this._filterMailboxes.value;
   }
 
-  get filteredMessages(): Observable<Envelope[]> {
+  get filteredMessages(): Observable<MsgSummary[]> {
     return Observable.combineLatest([
       this.allMessages,
       this._filterMailboxes,
-    ],(msgs:Envelope[],mbxs:Mailbox[])=>{
+    ],(msgs:MsgSummary[],mbxs:Mailbox[])=>{
       let res = msgs;
       if(mbxs.length > 0) {
         let paths = new Set(mbxs.map(mbx=>mbx.path));
@@ -382,14 +382,14 @@ export class ImapCache implements ImapModel {
     }
   }
 
-  updateMailboxes(): Promise<Mailboxes> {
+  updateMailboxes(): Promise<MailboxTree> {
     if(!this.isLoggedIn())
-      return Promise.reject<Mailboxes>("imapClient is not logged in!");
+      return Promise.reject<MailboxTree>("imapClient is not logged in!");
 
     return this.emailjsImapClient.listMailboxes()
-    .then((mailboxes)=>
-      this.store({...mailboxes, _id:"mailboxes"})
-      .then(()=>mailboxes)
+    .then((mailboxTree)=>
+      this.store({...mailboxTree, _id:"mailboxTree"})
+      .then(()=>mailboxTree)
     );
   }
 
@@ -441,7 +441,7 @@ export class ImapCache implements ImapModel {
     }
 
     return this.updateMailboxes()
-    .then(mailboxes=>updateTreeRecursively(mailboxes.children));
+    .then(mailboxTree=>updateTreeRecursively(mailboxTree.children));
   }
 }
 

@@ -19,7 +19,7 @@ import *  as Imap from '../lib/imapcache';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddressesViewComponent implements OnChanges {
-  @Input() addresses: Imap.Address[] = [];
+  @Input() addresses: Imap.NamedAddr[] = [];
 
   formatted: string;
 
@@ -29,7 +29,7 @@ export class AddressesViewComponent implements OnChanges {
     }
   }
 
-  format(addrList:Imap.Address[]): string {
+  format(addrList:Imap.NamedAddr[]): string {
 //    return addrList ? addrList.map(({address,name})=>`${name} <${address}>`).join(', ') : "";
     return addrList ? addrList.map(({address,name})=>name).join(', ') : "";
   }
@@ -130,7 +130,7 @@ export class MessageListInternalComponent {
 })
 export class MessageListComponent implements OnInit, OnDestroy {
   subscription: Subscription;
-  messages: Imap.Envelope[];
+  messages: Imap.MsgSummary[];
 
   constructor(
     private imapClientService: ImapClientService
@@ -138,7 +138,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscription = this.imapClientService.envelopes
-    .subscribe((messages:Imap.Envelope[])=>{
+    .subscribe((messages:Imap.MsgSummary[])=>{
       this.messages = messages;
     });
   }
