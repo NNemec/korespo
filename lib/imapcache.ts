@@ -188,7 +188,7 @@ export class ImapCache implements ImapModel {
 
     this.account = (this.observe("account") as Observable<Account>).publishBehavior(new Account).refCount();
 
-    this.allMessages = (this.observe_by_prefix("envelope:") as Observable<MsgSummary[]>).publishBehavior([]).refCount();
+    this.allMessages = (this.observe_by_prefix("summary:") as Observable<MsgSummary[]>).publishBehavior([]).refCount();
 
     this._statisticsPerMailbox = this.allMessages.map((msgs:MsgSummary[])=>{
       let res: {[id:string]:number} = {};
@@ -412,7 +412,7 @@ export class ImapCache implements ImapModel {
       return this.store({...mailbox, _id:"mailbox:"+path});
     }).then(()=>{
       let p_imapmsgs = this.emailjsImapClient.listMessages(path,"1:*",['uid']);
-      let p_cachemsgs = this.retrieve_by_prefix("envelope:"+path+":");
+      let p_cachemsgs = this.retrieve_by_prefix("summary:"+path+":");
       return Promise.all([p_imapmsgs,p_cachemsgs]);
     }).then(([imapmsgs,cachemsgs])=>{
       let imapuids = new Set(imapmsgs.map(({uid})=>uid));
@@ -428,14 +428,14 @@ export class ImapCache implements ImapModel {
     }).then((new_messages)=>{
       for(let message of new_messages) {
         delete message["#"];
-        message._id = "envelope:"+path+":"+message.uid;
+        message._id = "summary:"+path+":"+message.uid;
       }
 
       // console.log("storing messages: " + JSON.stringify(new_messages,null,'\t'));
 
       return this.store_bulk(new_messages);
     }).then(()=>{
-      return this.retrieve_by_prefix("envelope:"+path+":");
+      return this.retrieve_by_prefix("summary:"+path+":");
     }).then((messages)=>{
       // console.log("retrieved messages: " + JSON.stringify(messages,null,'\t'));
     });
