@@ -49,7 +49,7 @@ export class AddressPaneComponent implements OnInit {
   }
   set selectedContacts(val: Imap.Contact[]) {
     this._selectedContacts = val;
-    this.imapClientService.filterContacts(val);
+    this.imapClientService.filterContacts = val;
   }
 
   constructor(

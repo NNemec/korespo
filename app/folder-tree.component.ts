@@ -65,7 +65,7 @@ export class FolderItemComponent implements OnInit, OnDestroy {
     if(this.prefix == "")
       this.prefix = "📁 "
 
-    this.subscription = this.imapClientService.countMessagesPerMailbox(this.mailbox)
+    this.subscription = this.imapClientService.countMsgsPerMailbox(this.mailbox)
     .subscribe(count=>{
       this.countMessages=count;
     });
@@ -102,7 +102,7 @@ export class FolderTreeComponent implements OnInit, OnDestroy {
   }
   set selectedFolders(val: TreeNode[]) {
     this._selectedFolders = val;
-    this.imapClientService.filterFolders(val.map(node=>node.data as Imap.Mailbox));
+    this.imapClientService.filterMailboxes = val.map(node=>node.data as Imap.Mailbox);
   }
 
   constructor(

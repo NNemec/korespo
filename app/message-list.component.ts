@@ -142,7 +142,7 @@ export class MessageListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.subscription = this.imapClientService.envelopes
+    this.subscription = this.imapClientService.filteredMessages
     .subscribe((messages:Imap.MsgSummary[])=>{
       this.messages = messages;
     });

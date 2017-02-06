@@ -37,7 +37,7 @@ export class ImapClientService {
     return this.ngZoneWrap(this.imapCache.account);
   }
 
-  get envelopes(): Observable<Imap.MsgSummary[]> {
+  get filteredMessages(): Observable<Imap.MsgSummary[]> {
     return this.ngZoneWrap(this.imapCache.filteredMessages);
   }
 
@@ -45,15 +45,15 @@ export class ImapClientService {
     return this.ngZoneWrap(this.imapCache.contacts);
   }
 
-  filterFolders(mailboxTree: Imap.Mailbox[]) {
+  set filterMailboxes(mailboxTree: Imap.Mailbox[]) {
     this.imapCache.filterMailboxes = mailboxTree;
   }
 
-  filterContacts(contacts: Imap.Contact[]) {
+  set filterContacts(contacts: Imap.Contact[]) {
     this.imapCache.filterContacts = contacts;
   }
 
-  countMessagesPerMailbox(mbx: Imap.Mailbox): Observable<number> {
+  countMsgsPerMailbox(mbx: Imap.Mailbox): Observable<number> {
     return this.ngZoneWrap(this.imapCache.countMsgsPerMailbox(mbx));
   }
 
