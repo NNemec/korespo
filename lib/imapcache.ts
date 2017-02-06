@@ -98,7 +98,7 @@ export interface ImapModel {
 
 /*****************************************************************************/
 
-export class AccountData {
+export class Account {
   host: string = "";
   port: number = 0;
   user: string = "";
@@ -109,17 +109,12 @@ export class AccountData {
 
 export class ImapCache implements ImapModel {
   private emailjsImapClient: any;
-  private _accountData = new AccountData;
 
   private db: any;
   private _isOpen = false;
 
   isOpen(): boolean {
     return this._isOpen;
-  }
-
-  accountData(): AccountData {
-    return this._accountData;
   }
 
   dbAccess(): any {
@@ -168,6 +163,7 @@ export class ImapCache implements ImapModel {
     return this.db.bulkDocs(newdocs);
   }
 
+  account: Observable<Account>;
 
   allMessages: Observable<MsgSummary[]>;
   private _statisticsPerMailbox: Observable<{[id:string]:number}>;
@@ -190,10 +186,7 @@ export class ImapCache implements ImapModel {
       this._isOpen = true;
     });
 
-    this.retrieve("account").then((doc) => {
-      this._accountData = doc as AccountData;
-    }).catch(()=>{
-    });
+    this.account = (this.observe("account") as Observable<Account>).publishBehavior(new Account).refCount();
 
     this.allMessages = (this.observe_by_prefix("envelope:") as Observable<MsgSummary[]>).publishBehavior([]).refCount();
 
@@ -359,18 +352,18 @@ export class ImapCache implements ImapModel {
     return this.emailjsImapClient && this.isOpen();
   }
 
-  login(): Promise<any> {
-    this.store({...this._accountData, _id:"account"});
+  login(account: Account): Promise<any> {
+    this.store({...account, _id:"account"});
 
     const EmailjsImapClient = require('emailjs-imap-client');
 
     let client = new EmailjsImapClient(
-      this._accountData.host,
-      Number(this._accountData.port),
+      account.host,
+      Number(account.port),
       {
         auth: {
-          user: this._accountData.user,
-          pass: this._accountData.pass,
+          user: account.user,
+          pass: account.pass,
         },
         requireTLS: true,
       });

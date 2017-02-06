@@ -2,12 +2,12 @@
   <p-toolbar>
     <div *ngIf="! imapClientService.isLoggedIn()" class="ui-toolbar-group-left">
       <p-dialog header="Setup" [(visible)]="showSetup">
-        <div> <label>host: </label> <input pInputText [(ngModel)]="imapClientService.accountData.host"> </div>
-        <div> <label>port: </label> <input pInputText [(ngModel)]="imapClientService.accountData.port"> </div>
-        <div> <label>user: </label> <input pInputText [(ngModel)]="imapClientService.accountData.user"> </div>
-        <div> <label>pass: </label> <input pInputText [(ngModel)]="imapClientService.accountData.pass"> </div>
+        <div> <label>host: </label> <input pInputText [(ngModel)]="account.host"> </div>
+        <div> <label>port: </label> <input pInputText [(ngModel)]="account.port"> </div>
+        <div> <label>user: </label> <input pInputText [(ngModel)]="account.user"> </div>
+        <div> <label>pass: </label> <input pInputText [(ngModel)]="account.pass"> </div>
       </p-dialog>
-      <button pButton (click)="imapClientService.login()" icon="fa-sign-in" label="login"></button>
+      <button pButton (click)="imapClientService.login(account)" icon="fa-sign-in" label="login"></button>
       <button pButton (click)="toggleSetup()" icon="fa-sliders" label="setup"></button>
     </div>
     <div *ngIf="imapClientService.isLoggedIn()" class="ui-toolbar-group-left">

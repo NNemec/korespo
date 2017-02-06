@@ -11,10 +11,6 @@ export class ImapClientService {
   constructor(private ngZone: NgZone) {
   }
 
-  accountData(): Imap.AccountData {
-    return this.imapCache.accountData();
-  }
-
   isOpen(): boolean {
     return this.imapCache.isOpen();
   }
@@ -35,6 +31,10 @@ export class ImapClientService {
 
   get mailboxTree(): Observable<Imap.MailboxTree> {
     return this.ngZoneWrap(this.imapCache.mailboxTree);
+  }
+
+  get account(): Observable<Imap.Account> {
+    return this.ngZoneWrap(this.imapCache.account);
   }
 
   get envelopes(): Observable<Imap.MsgSummary[]> {
@@ -61,8 +61,8 @@ export class ImapClientService {
     return this.imapCache.isLoggedIn();
   }
 
-  login(): Promise<any> {
-    return this.imapCache.login();
+  login(account: Imap.Account): Promise<any> {
+    return this.imapCache.login(account);
   }
 
   logout(): void {
