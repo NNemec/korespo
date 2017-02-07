@@ -188,7 +188,7 @@ export class ImapCache implements ImapModel {
 
     this.account = (this.observe("account") as Observable<Account>).publishBehavior(new Account).refCount();
 
-    this.allMessages = (this.observe_by_prefix("summary:") as Observable<MsgSummary[]>).publishBehavior([]).refCount();
+    this.allMessages = (this.observe_by_prefix("summary:") as Observable<MsgSummary[]>).debounceTime(100).publishBehavior([]).refCount();
 
     this._statisticsPerMailbox = this.allMessages.map((msgs:MsgSummary[])=>{
       let res: {[id:string]:number} = {};
