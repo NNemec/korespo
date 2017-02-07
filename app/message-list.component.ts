@@ -1,7 +1,8 @@
 import { Component,
          OnInit, OnDestroy, OnChanges,
-         Input, SimpleChanges,
-         ChangeDetectionStrategy } from '@angular/core';
+         Input, Output, SimpleChanges,
+         ChangeDetectionStrategy,
+         EventEmitter } from '@angular/core';
 
 import { DataTable } from 'primeng/primeng';
 import { Subscription } from 'rxjs';
@@ -109,6 +110,9 @@ export class MessageListInternalComponent {
     return this._messages;
   };
 
+  @Output()
+  selectedMessage = new EventEmitter<Imap.MsgSummary>();
+
   private _limitMessageCount = 50;
   set limitMessageCount(val: number) {
     this._limitMessageCount = val;
@@ -122,20 +126,23 @@ export class MessageListInternalComponent {
 
   selectedMessages: any[] = [];
 
-  onSelectMessages(event) {
-    let selectedMessage = event.node
-    console.log(selectedMessage._id)
+  onSelectMessage(event) {
+    this.selectedMessage.emit(event.data);
   }
 }
 
 @Component({
   moduleId: module.id,
   selector: 'message-list',
-  template: '<message-list-internal [messages]="messages"></message-list-internal>'
+  template: '<message-list-internal [messages]="messages" (selectedMessage)="selectedMessage = $event"></message-list-internal>'
 })
 export class MessageListComponent implements OnInit, OnDestroy {
   subscription: Subscription;
   messages: Imap.MsgSummary[];
+
+  set selectedMessage(msg: Imap.MsgSummary) {
+    this.imapClientService.selectedMessage = msg;
+  }
 
   constructor(
     private imapClientService: ImapClientService

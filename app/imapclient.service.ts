@@ -57,6 +57,10 @@ export class ImapClientService {
     return this.ngZoneWrap(this.imapCache.countMsgsPerMailbox(mbx));
   }
 
+  set selectedMessage(msg: Imap.MsgSummary) {
+    this.imapCache.selectedMessage = msg;
+  }
+
   isLoggedIn(): boolean {
     return this.imapCache.isLoggedIn();
   }

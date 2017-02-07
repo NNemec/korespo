@@ -348,6 +348,9 @@ export class ImapCache implements ImapModel {
     return this._statisticsPerMailbox.map(map=>map[mbx.path]);
   }
 
+  set selectedMessage(msg: MsgSummary) {
+  }
+
   isLoggedIn(): boolean {
     return this.emailjsImapClient && this.isOpen();
   }
