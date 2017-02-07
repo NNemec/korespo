@@ -423,7 +423,12 @@ export class ImapCache implements ImapModel {
       // handle to_delete here
 
       return  to_create.length == 0 ? []
-          : this.emailjsImapClient.listMessages(path,to_create.join(','),['uid','flags','envelope'],{byUid:true});
+          : this.emailjsImapClient.listMessages(
+              path,
+              to_create.join(','),
+              ['uid','flags','envelope','rfc822.size','bodystructure'],
+              {byUid:true}
+            );
 
     }).then((new_messages)=>{
       for(let message of new_messages) {
