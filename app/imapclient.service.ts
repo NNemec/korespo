@@ -6,7 +6,7 @@ import * as Imap from '../lib/imapcache';
 
 @Injectable()
 export class ImapClientService {
-  private imapCache = new Imap.ImapCache();
+  private imapCache: Imap.ImapModel = new Imap.ImapCache();
 
   constructor(private ngZone: NgZone) {
   }

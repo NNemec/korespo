@@ -75,6 +75,10 @@ export class AddrStats {
 
 export interface ImapModel {
 
+  isOpen(): boolean;
+  close(): void;
+
+
   readonly mailboxTree: Observable<MailboxTree>;
   readonly contacts: Observable<Contact[]>;
 //  readonly flags: Observable<string[]>;
@@ -93,6 +97,18 @@ export interface ImapModel {
 //  countMsgsPerAddress(addr:NamedAddr,hdr?:string): Observable<Number>;
   countMsgsPerMailbox(mbx:Mailbox): Observable<Number>;
 //  countMsgsPerFlag(flag:string): Observable<Number>;
+
+
+  selectedMessage: MsgSummary;
+
+  account: Observable<Account>;
+  isLoggedIn(): boolean;
+  login(account: Account): Promise<any>;
+  logout(): void;
+
+  updateMailboxes(): Promise<any>;
+  updateMailbox(mailbox: Mailbox): Promise<void>;
+  updateAll(): Promise<void>;
 };
 
 
