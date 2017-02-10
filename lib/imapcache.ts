@@ -45,6 +45,20 @@ export interface MsgSummary {
   };
 };
 
+export interface BodyStructure {
+  type: string;
+  childNodes?: BodyStructure[];
+  part?: string;
+  lineCount?: number;
+  size?: number;
+  disposition?: string;
+  encoding?: string;
+  parameters?: {
+    boundary?: string;
+    charset?: string;
+  };
+}
+
 /*****************************************************************************/
 
 export class Contact {
@@ -100,6 +114,8 @@ export interface ImapModel {
 
 
   selectedMessage: MsgSummary;
+  bodyStructure(msg: MsgSummary): Promise<BodyStructure>;
+  bodyPart(part: BodyStructure): Promise<string>;
 
   account: Observable<Account>;
   isLoggedIn(): boolean;
@@ -365,6 +381,45 @@ export class ImapCache implements ImapModel {
   }
 
   set selectedMessage(msg: MsgSummary) {
+    let [prefix,path,uid] = msg._id.split(":");
+
+    if(!this.isLoggedIn()) {
+      console.log("imapClient is not logged in!");
+      return;
+    }
+
+    this.bodyStructure(msg).then(bodyStructure=>{
+      console.log("bodyStructure: ",bodyStructure);
+
+      let self = this;
+
+      function recurse(bodyStructure: BodyStructure, depth: number):Promise<void> {
+        let idt = "\t".repeat(depth);
+        console.log(idt + bodyStructure.type);
+        if(bodyStructure.type.startsWith("multipart/")) {
+          return promiseLoop(bodyStructure.childNodes,child=>recurse(child,depth+1));
+        } else {
+          return self.bodyPart(msg,bodyStructure).then(str=>{
+            console.log(idt + "body: ",str);
+          })
+        }
+      }
+
+      return recurse(bodyStructure,0);
+    });
+  }
+
+  bodyStructure(msg: MsgSummary): Promise<BodyStructure> {
+    return Promise.resolve((msg as any).bodystructure as BodyStructure);
+  }
+
+  bodyPart(msg: MsgSummary, part: BodyStructure): Promise<string> {
+    let [prefix,path,uid] = msg._id.split(":");
+    let selector = part.part ? 'body['+part.part+']' : 'body[text]';
+    return this.emailjsImapClient.listMessages(path,uid,[selector],{byUid:true})
+    .then(msg=>{
+      return msg[0][selector];
+    })
   }
 
   isLoggedIn(): boolean {
