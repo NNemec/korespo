@@ -35,6 +35,7 @@
     "deep-equal": "^1.0.1",
     "electron-reload": "^1.1.0",
     "emailjs-imap-client": "^2.0.3",
+    "emailjs-mime-codec": "^1.0.3",
     "font-awesome": "^4.7.0",
     "moment": "^2.17.1",
     "pouchdb": "^6.1.1",

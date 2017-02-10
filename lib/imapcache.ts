@@ -9,6 +9,8 @@ import { promiseLoop, pouchdb_observe, pouchdb_store } from './util';
 
 import { Moment } from 'moment';
 
+import * as mimecodec from 'emailjs-mime-codec';
+
 /*****************************************************************************/
 
 export interface Mailbox {
@@ -418,7 +420,17 @@ export class ImapCache implements ImapModel {
     let selector = part.part ? 'body['+part.part+']' : 'body[text]';
     return this.emailjsImapClient.listMessages(path,uid,[selector],{byUid:true})
     .then(msg=>{
-      return msg[0][selector];
+      let text = msg[0][selector];
+      let encoding = part.encoding.toLowerCase();
+      let charset = part.parameters.charset;
+      let decode = {
+        "7bit": mimecodec.mimeDecode,
+        "8bit": mimecodec.mimeDecode,
+        "binary": mimecodec.mimeDecode,
+        "base64": mimecodec.base64Decode,
+        "quoted-printable": mimecodec.quotedPrintableDecode,
+      }[encoding];
+      return decode(text,charset);
     })
   }
 
